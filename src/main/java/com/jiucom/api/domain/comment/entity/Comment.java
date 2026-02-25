@@ -36,4 +36,8 @@ public class Comment extends BaseTimeEntity {
     @Column(nullable = false)
     @Builder.Default
     private int likeCount = 0;
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

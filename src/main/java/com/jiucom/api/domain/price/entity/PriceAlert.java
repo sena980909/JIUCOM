@@ -36,4 +36,13 @@ public class PriceAlert extends BaseTimeEntity {
     @Column(nullable = false)
     @Builder.Default
     private boolean isTriggered = false;
+
+    public void deactivate() {
+        this.isActive = false;
+    }
+
+    public void trigger() {
+        this.isTriggered = true;
+        this.isActive = false;
+    }
 }

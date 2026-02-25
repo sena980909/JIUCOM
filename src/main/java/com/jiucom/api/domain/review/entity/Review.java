@@ -35,4 +35,12 @@ public class Review extends BaseTimeEntity {
     @Column(nullable = false)
     @Builder.Default
     private int likeCount = 0;
+
+    public void updateRating(int rating) {
+        this.rating = rating;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

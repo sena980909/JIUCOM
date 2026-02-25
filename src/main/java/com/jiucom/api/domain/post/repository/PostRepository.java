@@ -8,7 +8,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
+    Page<Post> findByIsDeletedFalse(Pageable pageable);
+
     Page<Post> findByBoardTypeAndIsDeletedFalse(BoardType boardType, Pageable pageable);
 
     Page<Post> findByTitleContainingIgnoreCaseAndIsDeletedFalse(String keyword, Pageable pageable);
+
+    long countByIsDeletedFalse();
 }

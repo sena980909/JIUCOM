@@ -38,6 +38,26 @@ public enum GlobalErrorCode {
     // Price
     PRICE_NOT_FOUND(HttpStatus.NOT_FOUND, "JIUCOM-PR001", "가격 정보를 찾을 수 없습니다."),
 
+    // Payment
+    PAYMENT_NOT_READY(HttpStatus.SERVICE_UNAVAILABLE, "JIUCOM-PAY001", "구매나 결제는 아직 준비가 안되었습니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "JIUCOM-PAY002", "결제 정보를 찾을 수 없습니다."),
+
+    // Post
+    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "JIUCOM-PO001", "게시글을 찾을 수 없습니다."),
+    POST_NOT_AUTHOR(HttpStatus.FORBIDDEN, "JIUCOM-PO002", "게시글 작성자만 수정/삭제할 수 있습니다."),
+
+    // Comment
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "JIUCOM-C001", "댓글을 찾을 수 없습니다."),
+    COMMENT_NOT_AUTHOR(HttpStatus.FORBIDDEN, "JIUCOM-C002", "댓글 작성자만 수정/삭제할 수 있습니다."),
+
+    // Review
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "JIUCOM-R001", "리뷰를 찾을 수 없습니다."),
+    REVIEW_NOT_AUTHOR(HttpStatus.FORBIDDEN, "JIUCOM-R002", "리뷰 작성자만 수정/삭제할 수 있습니다."),
+    REVIEW_ALREADY_EXISTS(HttpStatus.CONFLICT, "JIUCOM-R003", "이미 해당 부품에 리뷰를 작성했습니다."),
+
+    // Notification
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "JIUCOM-N001", "알림을 찾을 수 없습니다."),
+
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "JIUCOM-429", "요청 횟수가 초과되었습니다.");
 

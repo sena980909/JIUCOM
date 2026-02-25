@@ -43,4 +43,30 @@ public class Post extends BaseTimeEntity {
     @Column(nullable = false)
     @Builder.Default
     private int commentCount = 0;
+
+    public void updateTitle(String title) {
+        this.title = title;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void updateBoardType(BoardType boardType) {
+        this.boardType = boardType;
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
+    public void incrementCommentCount() {
+        this.commentCount++;
+    }
+
+    public void decrementCommentCount() {
+        if (this.commentCount > 0) {
+            this.commentCount--;
+        }
+    }
 }
