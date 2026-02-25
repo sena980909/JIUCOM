@@ -1,0 +1,9 @@
+.git
+.gradle
+build
+.idea
+*.iml
+.env
+*.md
+!CLAUDE.md
+docker-compose.override.yml
