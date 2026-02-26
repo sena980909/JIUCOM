@@ -23,6 +23,15 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
+cors:
+  allowed-origins: ${CORS_ORIGINS:https://jiucom.com}
+
+rate-limit:
+  max-requests: ${RATE_LIMIT_MAX:100}
+
+email:
+  enabled: true
+
 logging:
   level:
     com.jiucom.api: INFO

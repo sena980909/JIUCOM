@@ -58,6 +58,14 @@ public enum GlobalErrorCode {
     // Notification
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "JIUCOM-N001", "알림을 찾을 수 없습니다."),
 
+    // Like
+    LIKE_TARGET_NOT_FOUND(HttpStatus.NOT_FOUND, "JIUCOM-L001", "좋아요 대상을 찾을 수 없습니다."),
+
+    // Image
+    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "JIUCOM-IMG001", "이미지 업로드에 실패했습니다."),
+    IMAGE_EMPTY(HttpStatus.BAD_REQUEST, "JIUCOM-IMG002", "이미지 파일이 비어있습니다."),
+    IMAGE_INVALID_TYPE(HttpStatus.BAD_REQUEST, "JIUCOM-IMG003", "허용되지 않는 이미지 형식입니다. (jpeg, png, webp만 가능)"),
+
     // Rate Limit
     RATE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "JIUCOM-429", "요청 횟수가 초과되었습니다.");
 

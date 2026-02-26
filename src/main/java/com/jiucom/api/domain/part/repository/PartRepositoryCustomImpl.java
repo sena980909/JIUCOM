@@ -54,6 +54,18 @@ public class PartRepositoryCustomImpl implements PartRepositoryCustom {
         return new PageImpl<>(content, pageable, total);
     }
 
+    @Override
+    public List<String> suggestNames(String keyword, int limit) {
+        QPart part = QPart.part;
+        return queryFactory.select(part.name)
+                .from(part)
+                .where(part.isDeleted.eq(false)
+                        .and(part.name.startsWithIgnoreCase(keyword)))
+                .orderBy(part.name.asc())
+                .limit(limit)
+                .fetch();
+    }
+
     private OrderSpecifier<?> getOrderSpecifier(Pageable pageable, QPart part) {
         if (pageable.getSort().isSorted()) {
             var order = pageable.getSort().iterator().next();

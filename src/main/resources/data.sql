@@ -156,3 +156,13 @@ VALUES (1, 1, false, NOW(), NOW());
 
 INSERT INTO favorites (user_id, part_id, is_deleted, created_at, updated_at)
 VALUES (1, 3, false, NOW(), NOW());
+
+-- Phase 2: Sample Likes (admin -> post 1, review 1, build 1)
+INSERT INTO content_likes (user_id, target_type, target_id, is_deleted, created_at, updated_at)
+VALUES (1, 'POST', 1, false, NOW(), NOW());
+
+INSERT INTO content_likes (user_id, target_type, target_id, is_deleted, created_at, updated_at)
+VALUES (1, 'REVIEW', 1, false, NOW(), NOW());
+
+INSERT INTO content_likes (user_id, target_type, target_id, is_deleted, created_at, updated_at)
+VALUES (1, 'BUILD', 1, false, NOW(), NOW());

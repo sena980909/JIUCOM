@@ -4,6 +4,8 @@ import com.jiucom.api.global.exception.GlobalException;
 import com.jiucom.api.global.exception.code.GlobalErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -12,11 +14,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
+@Profile("!prod")
 public class RateLimitInterceptor implements HandlerInterceptor {
 
-    private static final int MAX_REQUESTS_PER_MINUTE = 60;
+    private final int maxRequestsPerMinute;
     private final Map<String, AtomicInteger> requestCounts = new ConcurrentHashMap<>();
     private volatile long lastResetTime = System.currentTimeMillis();
+
+    public RateLimitInterceptor(
+            @Value("${rate-limit.max-requests:60}") int maxRequestsPerMinute) {
+        this.maxRequestsPerMinute = maxRequestsPerMinute;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -29,7 +37,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         String clientIp = getClientIp(request);
         AtomicInteger count = requestCounts.computeIfAbsent(clientIp, k -> new AtomicInteger(0));
 
-        if (count.incrementAndGet() > MAX_REQUESTS_PER_MINUTE) {
+        if (count.incrementAndGet() > maxRequestsPerMinute) {
             throw new GlobalException(GlobalErrorCode.RATE_LIMIT_EXCEEDED);
         }
         return true;

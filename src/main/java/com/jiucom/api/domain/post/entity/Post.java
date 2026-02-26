@@ -69,4 +69,14 @@ public class Post extends BaseTimeEntity {
             this.commentCount--;
         }
     }
+
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
+    }
 }

@@ -1,22 +1,29 @@
 package com.jiucom.api.global.config;
 
-import com.jiucom.api.global.config.interceptor.RateLimitInterceptor;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final RateLimitInterceptor rateLimitInterceptor;
+    private final HandlerInterceptor rateLimitInterceptor;
+    private final String[] allowedOrigins;
+
+    public WebMvcConfig(
+            HandlerInterceptor rateLimitInterceptor,
+            @Value("${cors.allowed-origins:*}") String[] allowedOrigins) {
+        this.rateLimitInterceptor = rateLimitInterceptor;
+        this.allowedOrigins = allowedOrigins;
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("*")
+                .allowedOriginPatterns(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)

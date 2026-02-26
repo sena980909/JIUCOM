@@ -30,6 +30,9 @@ public class SecurityConfig {
             "/posts/**",
             "/comments/**",
             "/reviews/**",
+            "/likes/**",
+            "/search/**",
+            "/images/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/v3/api-docs/**",
@@ -44,7 +47,19 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin())
+                        .contentTypeOptions(contentType -> {})
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000))
+                        .xssProtection(xss -> xss.disable())
+                        .contentSecurityPolicy(csp ->
+                                csp.policyDirectives("default-src 'self'; frame-ancestors 'self'; form-action 'self'"))
+                        .referrerPolicy(referrer ->
+                                referrer.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        .permissionsPolicy(permissions ->
+                                permissions.policy("camera=(), microphone=(), geolocation=()")))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_URLS).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")

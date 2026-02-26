@@ -43,4 +43,14 @@ public class Review extends BaseTimeEntity {
     public void updateContent(String content) {
         this.content = content;
     }
+
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
+    }
 }

@@ -120,6 +120,10 @@ public class AuthService {
 
         long refreshValidity = jwtTokenProvider.getRefreshTokenValidity();
 
+        // 기존 리프레시 토큰 삭제 (로그인 시 기존 세션 무효화)
+        refreshTokenRepository.deleteByUser(user);
+        tryDeleteRedisRefreshToken(user.getId());
+
         // DB 저장
         RefreshToken refreshTokenEntity = RefreshToken.builder()
                 .user(user)
