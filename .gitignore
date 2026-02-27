@@ -40,3 +40,21 @@ docker-compose.override.yml
 *.db
 *.mv.db
 *.trace.db
+
+# AWS
+*.pem
+cf-config.json
+cf-update.json
+.env.aws
+
+# Frontend build
+frontend/node_modules/
+frontend/dist/
+
+# Claude
+.claude/
+
+# Reports & generated
+monitoring-reports/
+generate_pdf.py
+지우컴_사업기획서.pdf

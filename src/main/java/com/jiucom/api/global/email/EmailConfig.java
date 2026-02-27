@@ -11,15 +11,14 @@ import org.thymeleaf.TemplateEngine;
 public class EmailConfig {
 
     @Bean
-    @Profile({"dev", "test", "default"})
-    public EmailService mockEmailService() {
-        return new MockEmailService();
-    }
-
-    @Bean
-    @Profile("prod")
     @ConditionalOnProperty(name = "email.enabled", havingValue = "true")
     public EmailService smtpEmailService(JavaMailSender mailSender, TemplateEngine templateEngine) {
         return new SmtpEmailService(mailSender, templateEngine);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "email.enabled", havingValue = "false", matchIfMissing = true)
+    public EmailService mockEmailService() {
+        return new MockEmailService();
     }
 }

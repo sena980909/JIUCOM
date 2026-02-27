@@ -1,0 +1,132 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: jiucom
+  labels:
+    app: jiucom
+    component: nginx
+data:
+  nginx.conf: |
+    worker_processes auto;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log /var/log/nginx/access.log main;
+        error_log  /var/log/nginx/error.log warn;
+
+        sendfile        on;
+        keepalive_timeout 65;
+        client_max_body_size 10M;
+
+        # Rate limiting
+        limit_req_zone $binary_remote_addr zone=api:10m rate=30r/s;
+
+        # Gzip compression
+        gzip on;
+        gzip_types text/plain application/json application/javascript text/css;
+        gzip_min_length 1000;
+
+        # Upstream definitions
+        upstream jiucom-api {
+            server jiucom-api:8080;
+        }
+
+        upstream grafana {
+            server grafana:3000;
+        }
+
+        upstream zipkin {
+            server zipkin:9411;
+        }
+
+        upstream prometheus {
+            server prometheus:9090;
+        }
+
+        server {
+            listen 80;
+            server_name localhost;
+
+            # Security headers
+            add_header X-Frame-Options "SAMEORIGIN" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header X-XSS-Protection "1; mode=block" always;
+            add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+            # API Gateway - Spring Boot
+            location /api/v1/ {
+                limit_req zone=api burst=50 nodelay;
+
+                proxy_pass http://jiucom-api;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                # WebSocket support
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+
+                # Timeouts
+                proxy_connect_timeout 60s;
+                proxy_send_timeout 60s;
+                proxy_read_timeout 60s;
+            }
+
+            # Grafana
+            location /grafana/ {
+                proxy_pass http://grafana/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                # WebSocket support for Grafana Live
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+            }
+
+            # Zipkin
+            location /zipkin/ {
+                proxy_pass http://zipkin/zipkin/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Prometheus
+            location /prometheus/ {
+                proxy_pass http://prometheus/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # Health check
+            location /health {
+                access_log off;
+                return 200 'OK';
+                add_header Content-Type text/plain;
+            }
+
+            # Default
+            location / {
+                return 301 /api/v1/swagger-ui.html;
+            }
+        }
+    }

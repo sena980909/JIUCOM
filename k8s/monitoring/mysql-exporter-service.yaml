@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-exporter
+  namespace: jiucom
+  labels:
+    app: jiucom
+    component: mysql-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: jiucom
+    component: mysql-exporter
+  ports:
+    - port: 9104
+      targetPort: 9104
+      name: metrics

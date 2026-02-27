@@ -11,6 +11,10 @@ import com.jiucom.api.global.exception.ExceptionAdvice;
 import com.jiucom.api.global.exception.GlobalException;
 import com.jiucom.api.global.exception.code.GlobalErrorCode;
 import com.jiucom.api.global.jwt.JwtTokenProvider;
+import com.jiucom.api.global.oauth2.CustomOAuth2UserService;
+import com.jiucom.api.global.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.jiucom.api.global.oauth2.OAuth2FailureHandler;
+import com.jiucom.api.global.oauth2.OAuth2SuccessHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +49,18 @@ class AuthControllerTest {
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
+
+    @MockitoBean
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @MockitoBean
+    private OAuth2SuccessHandler oAuth2SuccessHandler;
+
+    @MockitoBean
+    private OAuth2FailureHandler oAuth2FailureHandler;
+
+    @MockitoBean
+    private HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     private JwtTokenResponse mockTokenResponse() {
         return JwtTokenResponse.of("access-token", "refresh-token", 3600L);

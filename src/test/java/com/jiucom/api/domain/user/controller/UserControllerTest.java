@@ -7,6 +7,10 @@ import com.jiucom.api.domain.user.service.UserService;
 import com.jiucom.api.global.config.SecurityConfig;
 import com.jiucom.api.global.exception.ExceptionAdvice;
 import com.jiucom.api.global.jwt.JwtTokenProvider;
+import com.jiucom.api.global.oauth2.CustomOAuth2UserService;
+import com.jiucom.api.global.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.jiucom.api.global.oauth2.OAuth2FailureHandler;
+import com.jiucom.api.global.oauth2.OAuth2SuccessHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +47,18 @@ class UserControllerTest {
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
 
+    @MockitoBean
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @MockitoBean
+    private OAuth2SuccessHandler oAuth2SuccessHandler;
+
+    @MockitoBean
+    private OAuth2FailureHandler oAuth2FailureHandler;
+
+    @MockitoBean
+    private HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+
     private UserProfileResponse mockProfileResponse() {
         return UserProfileResponse.builder()
                 .id(1L)
@@ -72,7 +88,7 @@ class UserControllerTest {
     @DisplayName("GET /users/me - 인증 없음")
     void getMyProfile_unauthorized() throws Exception {
         mockMvc.perform(get("/users/me"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection());
     }
 
     @Test

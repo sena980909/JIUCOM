@@ -42,4 +42,12 @@ public class ApiResponse<T> {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+    public static <T> ApiResponse<T> error(String code, String message) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .message("[" + code + "] " + message)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 }

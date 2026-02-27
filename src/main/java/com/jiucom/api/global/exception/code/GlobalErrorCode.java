@@ -22,6 +22,9 @@ public enum GlobalErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "JIUCOM-A004", "유효하지 않은 토큰입니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "JIUCOM-A005", "비밀번호가 일치하지 않습니다."),
     ALREADY_LOGGED_OUT(HttpStatus.BAD_REQUEST, "JIUCOM-A006", "이미 로그아웃된 상태입니다."),
+    OAUTH_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "JIUCOM-A007", "소셜 로그인에 실패했습니다."),
+    OAUTH_INVALID_PROVIDER(HttpStatus.BAD_REQUEST, "JIUCOM-A008", "지원하지 않는 소셜 로그인 제공자입니다."),
+    OAUTH_EMAIL_DUPLICATE(HttpStatus.CONFLICT, "JIUCOM-A009", "이미 다른 방식으로 가입된 이메일입니다."),
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "JIUCOM-U001", "사용자를 찾을 수 없습니다."),

@@ -1,0 +1,62 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: jiucom
+
+resources:
+  # Namespace
+  - namespace.yaml
+
+  # Secrets
+  - secrets/secrets.yaml
+
+  # ConfigMaps
+  - configmaps/nginx-configmap.yaml
+  - configmaps/prometheus-configmap.yaml
+  - configmaps/grafana-provisioning-configmap.yaml
+  - configmaps/mysql-exporter-configmap.yaml
+
+  # MySQL (StatefulSet + Headless Service)
+  - mysql/service.yaml
+  - mysql/statefulset.yaml
+
+  # Redis (StatefulSet + Headless Service)
+  - redis/service.yaml
+  - redis/statefulset.yaml
+
+  # Application (Deployment + Service + HPA)
+  - app/service.yaml
+  - app/deployment.yaml
+  - app/hpa.yaml
+
+  # Nginx API Gateway (Deployment + LoadBalancer Service)
+  - nginx/deployment.yaml
+  - nginx/service.yaml
+
+  # Monitoring - Prometheus
+  - monitoring/prometheus-pvc.yaml
+  - monitoring/prometheus-deployment.yaml
+  - monitoring/prometheus-service.yaml
+
+  # Monitoring - Grafana
+  - monitoring/grafana-pvc.yaml
+  - monitoring/grafana-deployment.yaml
+  - monitoring/grafana-service.yaml
+
+  # Monitoring - Redis Exporter
+  - monitoring/redis-exporter-deployment.yaml
+  - monitoring/redis-exporter-service.yaml
+
+  # Monitoring - MySQL Exporter
+  - monitoring/mysql-exporter-deployment.yaml
+  - monitoring/mysql-exporter-service.yaml
+
+  # Tracing - Zipkin
+  - tracing/zipkin-deployment.yaml
+  - tracing/zipkin-service.yaml
+
+  # Ingress
+  - ingress/ingress.yaml
+
+commonLabels:
+  managed-by: kustomize

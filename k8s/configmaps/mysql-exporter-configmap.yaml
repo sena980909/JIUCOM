@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-exporter-config
+  namespace: jiucom
+  labels:
+    app: jiucom
+    component: mysql-exporter
+data:
+  .my.cnf: |
+    [client]
+    user=exporter
+    password=exporter
+    host=mysql
+    port=3306

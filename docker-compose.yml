@@ -9,10 +9,20 @@ services:
       MYSQL_USER: ${DB_USERNAME:-jiucom}
       MYSQL_PASSWORD: ${DB_PASSWORD:-jiucom1234}
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "${DB_PORT:-3307}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command:
+      - '--character-set-server=utf8mb4'
+      - '--collation-server=utf8mb4_unicode_ci'
+      - '--innodb-buffer-pool-size=256M'
+      - '--innodb-log-file-size=256M'
+      - '--tmp-table-size=64M'
+      - '--max-heap-table-size=64M'
+      - '--thread-cache-size=16'
+      - '--slow-query-log=1'
+      - '--slow-query-log-file=/var/log/mysql/slow.log'
+      - '--long-query-time=1'
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -123,6 +133,8 @@ services:
       - '--web.enable-lifecycle'
     depends_on:
       - app
+      - redis-exporter
+      - mysql-exporter
     deploy:
       resources:
         limits:
@@ -184,15 +196,18 @@ services:
       - jiucom-network
 
   mysql-exporter:
-    image: prom/mysqld-exporter:latest
+    image: prom/mysqld-exporter:v0.15.1
     container_name: jiucom-mysql-exporter
     ports:
       - "9104:9104"
-    environment:
-      DATA_SOURCE_NAME: "root:${DB_ROOT_PASSWORD:-rootpassword}@(mysql:3306)/"
+    command:
+      - '--config.my-cnf=/etc/.my.cnf'
+    volumes:
+      - ./monitoring/mysql-exporter/.my.cnf:/etc/.my.cnf:ro
     depends_on:
       mysql:
         condition: service_healthy
+    restart: unless-stopped
     deploy:
       resources:
         limits:

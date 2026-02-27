@@ -1,0 +1,83 @@
+services:
+  app:
+    build: .
+    container_name: jiucom-api
+    env_file:
+      - .env.aws
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-jiucom_db}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      NAVER_SHOPPING_CLIENT_ID: ${NAVER_SHOPPING_CLIENT_ID:-}
+      NAVER_SHOPPING_CLIENT_SECRET: ${NAVER_SHOPPING_CLIENT_SECRET:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    networks:
+      - jiucom-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: jiucom-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    networks:
+      - jiucom-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: jiucom-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/aws.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+    networks:
+      - jiucom-network
+
+volumes:
+  redis-data:
+
+networks:
+  jiucom-network:
+    driver: bridge

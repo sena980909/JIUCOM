@@ -113,7 +113,8 @@ public class AuthService {
         tryDeleteRedisRefreshToken(userId);
     }
 
-    private JwtTokenResponse generateTokens(User user) {
+    @Transactional
+    public JwtTokenResponse generateTokens(User user) {
         String role = user.getRole().name();
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), role);
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId(), role);

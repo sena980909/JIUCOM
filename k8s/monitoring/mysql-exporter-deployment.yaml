@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-exporter
+  namespace: jiucom
+  labels:
+    app: jiucom
+    component: mysql-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jiucom
+      component: mysql-exporter
+  template:
+    metadata:
+      labels:
+        app: jiucom
+        component: mysql-exporter
+    spec:
+      containers:
+        - name: mysql-exporter
+          image: prom/mysqld-exporter:v0.15.1
+          ports:
+            - containerPort: 9104
+              name: metrics
+          args:
+            - "--config.my-cnf=/etc/.my.cnf"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 9104
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 9104
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: mysql-exporter-config
+              mountPath: /etc/.my.cnf
+              subPath: .my.cnf
+              readOnly: true
+      volumes:
+        - name: mysql-exporter-config
+          configMap:
+            name: mysql-exporter-config

@@ -9,11 +9,15 @@ import com.jiucom.api.global.response.ApiResponse;
 import com.jiucom.api.global.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Tag(name = "Auth", description = "인증 API")
 @RestController
@@ -50,5 +54,21 @@ public class AuthController {
         Long userId = SecurityUtil.getCurrentUserId();
         authService.logout(userId);
         return ResponseEntity.ok(ApiResponse.ok());
+    }
+
+    @Operation(summary = "소셜 로그인 URL 목록", description = "카카오/네이버/구글 OAuth2 로그인 URL을 반환합니다.")
+    @GetMapping("/oauth2/urls")
+    public ResponseEntity<ApiResponse<Map<String, String>>> getOAuth2Urls(HttpServletRequest request) {
+        String baseUrl = request.getScheme() + "://" + request.getServerName()
+                + (request.getServerPort() != 80 && request.getServerPort() != 443
+                ? ":" + request.getServerPort() : "");
+        String contextPath = request.getContextPath();
+
+        Map<String, String> urls = new LinkedHashMap<>();
+        urls.put("google", baseUrl + contextPath + "/oauth2/authorize/google");
+        urls.put("kakao", baseUrl + contextPath + "/oauth2/authorize/kakao");
+        urls.put("naver", baseUrl + contextPath + "/oauth2/authorize/naver");
+
+        return ResponseEntity.ok(ApiResponse.ok(urls));
     }
 }
