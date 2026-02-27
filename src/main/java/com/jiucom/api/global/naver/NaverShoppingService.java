@@ -30,36 +30,54 @@ public class NaverShoppingService {
     private final PriceEntryRepository priceEntryRepository;
     private final PriceHistoryRepository priceHistoryRepository;
 
+    // Common blacklist keywords (applied to ALL categories)
+    private static final List<String> COMMON_BLACKLIST = List.of(
+            "청소솔", "청소기", "먼지떨이", "먼지제거", "에어더스터", "클리너",
+            "케이블", "연장선", "젠더", "컨버터", "변환",
+            "스티커", "데칼", "키캡", "마우스패드", "장패드",
+            "공구", "드라이버", "나사", "볼트", "너트", "워셔",
+            "가방", "파우치", "보호필름", "강화유리", "모니터 암",
+            "중고", "리퍼", "벌크", "수리", "as ", "a/s",
+            "조립비", "설치비", "출장", "택배비"
+    );
+
     // Category → blacklist keywords (items containing these are NOT real parts)
     private static final Map<PartCategory, List<String>> CATEGORY_BLACKLIST = Map.ofEntries(
             Map.entry(PartCategory.CPU, List.of(
                     "조립pc", "조립 pc", "조립식", "미니pc", "미니 pc", "본체", "게이밍 컴퓨터",
                     "게임용 pc", "컴퓨터 본체", "조립컴", "베어본", "풀세트", "세트", "데스크탑 세트",
-                    "조립 컴퓨터", "중고 컴퓨터", "중고컴퓨터", "견적"
+                    "조립 컴퓨터", "중고 컴퓨터", "중고컴퓨터", "견적",
+                    "쿨러", "서멀", "써멀", "방열판", "cpu 그리스"
             )),
             Map.entry(PartCategory.GPU, List.of(
-                    "조립pc", "조립 pc", "미니pc", "본체", "조립컴", "풀세트"
+                    "조립pc", "조립 pc", "미니pc", "본체", "조립컴", "풀세트",
+                    "지지대", "라이저", "받침대", "거치대", "백플레이트", "쿨링팬", "팬교체"
             )),
             Map.entry(PartCategory.RAM, List.of(
-                    "노트북", "sodimm", "so-dimm", "laptop"
+                    "노트북", "sodimm", "so-dimm", "laptop", "방열판", "히트싱크"
             )),
             Map.entry(PartCategory.SSD, List.of(
-                    "스팀덱", "steam deck", "외장 ssd", "portable", "usb ssd", "usb c"
+                    "스팀덱", "steam deck", "외장 ssd", "portable", "usb ssd", "usb c",
+                    "방열판", "히트싱크", "ssd 케이스", "인클로저", "독"
             )),
-            Map.entry(PartCategory.MOTHERBOARD, List.of()),
+            Map.entry(PartCategory.MOTHERBOARD, List.of(
+                    "백패널", "io쉴드", "와이파이 안테나", "안테나", "bios 칩"
+            )),
             Map.entry(PartCategory.HDD, List.of(
-                    "외장", "portable", "usb"
+                    "외장", "portable", "usb", "독", "도킹", "가이드", "마운트", "트레이"
             )),
             Map.entry(PartCategory.POWER_SUPPLY, List.of(
-                    "소형 전원", "미니 마더보드", "충전기", "어댑터", "노트북"
+                    "소형 전원", "미니 마더보드", "충전기", "어댑터", "노트북",
+                    "파워 케이블", "연장 케이블", "슬리빙", "커스텀 케이블", "테스터"
             )),
             Map.entry(PartCategory.CASE, List.of(
                     "사이드 패널", "side panel", "라이저", "riser", "usb adapter",
-                    "gpu 브라켓", "브라켓", "io 킷", "먼지필터", "팬 허브", "라이저 케이블"
+                    "gpu 브라켓", "브라켓", "io 킷", "먼지필터", "팬 허브", "라이저 케이블",
+                    "케이스 팬", "쿨링팬", "rgb 팬", "led 팬", "스트립", "led 바"
             )),
             Map.entry(PartCategory.COOLER, List.of(
                     "냉각수", "쿨런트", "coolant", "써멀패드", "thermal pad", "thermal paste",
-                    "써멀구리스", "써멀 구리스"
+                    "써멀구리스", "써멀 구리스", "팬 허브", "팬 스플리터", "pwm 분배"
             ))
     );
 
@@ -264,11 +282,20 @@ public class NaverShoppingService {
     }
 
     private boolean isBlacklisted(String title, PartCategory category) {
+        String lowerTitle = title.toLowerCase();
+
+        // Check common blacklist first
+        for (String keyword : COMMON_BLACKLIST) {
+            if (lowerTitle.contains(keyword.toLowerCase())) {
+                return true;
+            }
+        }
+
+        // Check category-specific blacklist
         List<String> blacklist = CATEGORY_BLACKLIST.get(category);
         if (blacklist == null || blacklist.isEmpty()) {
             return false;
         }
-        String lowerTitle = title.toLowerCase();
         for (String keyword : blacklist) {
             if (lowerTitle.contains(keyword.toLowerCase())) {
                 return true;

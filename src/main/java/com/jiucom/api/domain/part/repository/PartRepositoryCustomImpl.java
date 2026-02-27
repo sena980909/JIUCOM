@@ -75,9 +75,9 @@ public class PartRepositoryCustomImpl implements PartRepositoryCustom {
             return switch (property) {
                 case "price" -> asc ? part.lowestPrice.asc() : part.lowestPrice.desc();
                 case "name" -> asc ? part.name.asc() : part.name.desc();
-                default -> part.createdAt.desc();
+                default -> part.lowestPrice.asc();
             };
         }
-        return part.createdAt.desc();
+        return part.lowestPrice.asc();
     }
 }

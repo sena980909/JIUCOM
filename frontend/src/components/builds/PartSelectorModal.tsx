@@ -80,7 +80,7 @@ export default function PartSelectorModal({
       getParts({
         category,
         keyword: debouncedKeyword || undefined,
-        sort: debouncedKeyword ? undefined : 'price_asc',
+        sort: 'price_asc',
         page,
         size: 20,
       }),
