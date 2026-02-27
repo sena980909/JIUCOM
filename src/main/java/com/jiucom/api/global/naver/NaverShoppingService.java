@@ -30,6 +30,39 @@ public class NaverShoppingService {
     private final PriceEntryRepository priceEntryRepository;
     private final PriceHistoryRepository priceHistoryRepository;
 
+    // Category → blacklist keywords (items containing these are NOT real parts)
+    private static final Map<PartCategory, List<String>> CATEGORY_BLACKLIST = Map.ofEntries(
+            Map.entry(PartCategory.CPU, List.of(
+                    "조립pc", "조립 pc", "조립식", "미니pc", "미니 pc", "본체", "게이밍 컴퓨터",
+                    "게임용 pc", "컴퓨터 본체", "조립컴", "베어본", "풀세트", "세트", "데스크탑 세트",
+                    "조립 컴퓨터", "중고 컴퓨터", "중고컴퓨터", "견적"
+            )),
+            Map.entry(PartCategory.GPU, List.of(
+                    "조립pc", "조립 pc", "미니pc", "본체", "조립컴", "풀세트"
+            )),
+            Map.entry(PartCategory.RAM, List.of(
+                    "노트북", "sodimm", "so-dimm", "laptop"
+            )),
+            Map.entry(PartCategory.SSD, List.of(
+                    "스팀덱", "steam deck", "외장 ssd", "portable", "usb ssd", "usb c"
+            )),
+            Map.entry(PartCategory.MOTHERBOARD, List.of()),
+            Map.entry(PartCategory.HDD, List.of(
+                    "외장", "portable", "usb"
+            )),
+            Map.entry(PartCategory.POWER_SUPPLY, List.of(
+                    "소형 전원", "미니 마더보드", "충전기", "어댑터", "노트북"
+            )),
+            Map.entry(PartCategory.CASE, List.of(
+                    "사이드 패널", "side panel", "라이저", "riser", "usb adapter",
+                    "gpu 브라켓", "브라켓", "io 킷", "먼지필터", "팬 허브", "라이저 케이블"
+            )),
+            Map.entry(PartCategory.COOLER, List.of(
+                    "냉각수", "쿨런트", "coolant", "써멀패드", "thermal pad", "thermal paste",
+                    "써멀구리스", "써멀 구리스"
+            ))
+    );
+
     // Category → search keywords mapping (general Korean shopping terms)
     private static final Map<PartCategory, List<String>> CATEGORY_KEYWORDS = Map.ofEntries(
             Map.entry(PartCategory.CPU, List.of(
@@ -161,6 +194,12 @@ public class NaverShoppingService {
                 continue;
             }
 
+            // Filter out non-relevant products using blacklist
+            if (isBlacklisted(cleanTitle, category)) {
+                log.debug("Filtered out '{}' for category {} (blacklisted)", cleanTitle, category);
+                continue;
+            }
+
             // 1. Find or create Seller
             String mallName = item.getMallName();
             if (mallName == null || mallName.isBlank()) {
@@ -222,6 +261,20 @@ public class NaverShoppingService {
 
         log.info("Keyword '{}': {} parts, {} prices, {} sellers", keyword, partsCreated, priceEntriesCreated, sellersCreated);
         return new int[]{partsCreated, priceEntriesCreated, sellersCreated};
+    }
+
+    private boolean isBlacklisted(String title, PartCategory category) {
+        List<String> blacklist = CATEGORY_BLACKLIST.get(category);
+        if (blacklist == null || blacklist.isEmpty()) {
+            return false;
+        }
+        String lowerTitle = title.toLowerCase();
+        for (String keyword : blacklist) {
+            if (lowerTitle.contains(keyword.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Part findExistingPart(String title, PartCategory category) {
