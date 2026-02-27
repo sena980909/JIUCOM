@@ -3,12 +3,15 @@ import api from './client';
 export interface PriceComparison {
   partId: number;
   partName: string;
+  lowestPrice: number;
+  highestPrice: number;
   prices: {
     sellerId: number;
     sellerName: string;
+    siteUrl: string;
     price: number;
-    url: string;
-    updatedAt: string;
+    productUrl: string;
+    available: boolean;
   }[];
 }
 
@@ -38,9 +41,16 @@ export const comparePrices = async (partId: number) => {
   return response.data;
 };
 
+export interface PriceHistoryResponse {
+  partId: number;
+  partName: string;
+  period: string;
+  history: PriceHistoryEntry[];
+}
+
 export const getPriceHistory = async (partId: number, params: { days?: number } = {}) => {
   const period = params.days ? `${params.days}d` : '30d';
-  const response = await api.get<PriceHistoryEntry[]>(`/prices/parts/${partId}/history`, {
+  const response = await api.get<PriceHistoryResponse>(`/prices/parts/${partId}/history`, {
     params: { period },
   });
   return response.data;

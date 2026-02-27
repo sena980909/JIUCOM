@@ -18,8 +18,19 @@ const categoryLabels: Record<string, string> = {
   SSD: 'SSD',
   HDD: 'HDD',
   PSU: '파워서플라이',
+  POWER_SUPPLY: '파워서플라이',
   CASE: '케이스',
   COOLER: '쿨러',
+};
+
+const specKeyLabels: Record<string, string> = {
+  cores: '코어 수', threads: '스레드 수', socket: '소켓', tdp: 'TDP',
+  baseClock: '기본 클럭', boostClock: '부스트 클럭', coreClock: '코어 클럭',
+  vram: 'VRAM', cudaCores: 'CUDA 코어', interface: '인터페이스',
+  memoryType: '메모리 타입', chipset: '칩셋', formFactor: '폼팩터',
+  capacity: '용량', speed: '속도', type: '타입', readSpeed: '읽기 속도',
+  writeSpeed: '쓰기 속도', wattage: '출력', efficiency: '효율 등급',
+  modular: '모듈러', size: '크기', color: '색상', fanSize: '팬 크기',
 };
 
 function unwrap<T>(response: unknown): T {
@@ -162,13 +173,14 @@ export default function PartDetail() {
   };
 
   // Convert price history to chart data
-  const chartData = Array.isArray(priceHistory)
-    ? priceHistory.map((entry) => ({
-        date: entry.date,
-        price: entry.avgPrice,
-        sellerName: '평균가',
-      }))
-    : [];
+  const historyEntries = priceHistory && typeof priceHistory === 'object' && 'history' in priceHistory
+    ? (priceHistory as { history: { date: string; avgPrice: number }[] }).history
+    : Array.isArray(priceHistory) ? priceHistory : [];
+  const chartData = historyEntries.map((entry) => ({
+    date: entry.date,
+    price: entry.avgPrice,
+    sellerName: '평균가',
+  }));
 
   if (isLoadingPart) {
     return (
@@ -186,7 +198,15 @@ export default function PartDetail() {
     );
   }
 
-  const specs = part.specs as Record<string, unknown> | undefined;
+  const specsRaw = part.specs;
+  const specs: Record<string, unknown> | undefined = (() => {
+    if (!specsRaw) return undefined;
+    if (typeof specsRaw === 'string') {
+      try { return JSON.parse(specsRaw); } catch { return undefined; }
+    }
+    if (typeof specsRaw === 'object') return specsRaw as Record<string, unknown>;
+    return undefined;
+  })();
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -274,7 +294,7 @@ export default function PartDetail() {
               {Object.entries(specs).map(([key, value]) => (
                 <tr key={key} className="border-b border-gray-100 last:border-0">
                   <td className="py-3 pr-4 text-sm font-medium text-gray-600 w-1/3">
-                    {key}
+                    {specKeyLabels[key] || key}
                   </td>
                   <td className="py-3 text-sm text-gray-900">
                     {typeof value === 'object' ? JSON.stringify(value) : String(value ?? '-')}
@@ -296,7 +316,6 @@ export default function PartDetail() {
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">판매처</th>
                   <th className="text-right py-3 px-2 text-sm font-medium text-gray-600">가격</th>
-                  <th className="text-right py-3 px-2 text-sm font-medium text-gray-600">업데이트</th>
                   <th className="text-right py-3 px-2 text-sm font-medium text-gray-600"></th>
                 </tr>
               </thead>
@@ -309,13 +328,10 @@ export default function PartDetail() {
                     <td className="py-3 px-2 text-sm text-right font-bold text-blue-600">
                       {price.price.toLocaleString('ko-KR')}원
                     </td>
-                    <td className="py-3 px-2 text-sm text-right text-gray-500">
-                      {new Date(price.updatedAt).toLocaleDateString('ko-KR')}
-                    </td>
                     <td className="py-3 px-2 text-right">
-                      {price.url && (
+                      {price.productUrl && (
                         <a
-                          href={price.url}
+                          href={price.productUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
