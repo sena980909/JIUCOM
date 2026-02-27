@@ -15,6 +15,7 @@ import com.jiucom.api.global.exception.GlobalException;
 import com.jiucom.api.global.exception.code.GlobalErrorCode;
 import com.jiucom.api.global.jwt.JwtTokenProvider;
 import com.jiucom.api.global.util.RedisUtil;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -55,6 +56,9 @@ class AuthServiceTest {
 
     @Mock
     private RedisUtil redisUtil;
+
+    @Mock
+    private EntityManager entityManager;
 
     private User testUser;
 

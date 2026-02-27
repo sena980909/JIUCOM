@@ -18,7 +18,6 @@ export interface AuthTokenResponse {
 
 export interface OAuth2UrlsResponse {
   google: string;
-  kakao: string;
   naver: string;
 }
 

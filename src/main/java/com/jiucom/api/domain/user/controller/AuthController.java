@@ -56,7 +56,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok());
     }
 
-    @Operation(summary = "소셜 로그인 URL 목록", description = "카카오/네이버/구글 OAuth2 로그인 URL을 반환합니다.")
+    @Operation(summary = "소셜 로그인 URL 목록", description = "구글/네이버 OAuth2 로그인 URL을 반환합니다.")
     @GetMapping("/oauth2/urls")
     public ResponseEntity<ApiResponse<Map<String, String>>> getOAuth2Urls(HttpServletRequest request) {
         String baseUrl = request.getScheme() + "://" + request.getServerName()
@@ -66,7 +66,6 @@ public class AuthController {
 
         Map<String, String> urls = new LinkedHashMap<>();
         urls.put("google", baseUrl + contextPath + "/oauth2/authorize/google");
-        urls.put("kakao", baseUrl + contextPath + "/oauth2/authorize/kakao");
         urls.put("naver", baseUrl + contextPath + "/oauth2/authorize/naver");
 
         return ResponseEntity.ok(ApiResponse.ok(urls));

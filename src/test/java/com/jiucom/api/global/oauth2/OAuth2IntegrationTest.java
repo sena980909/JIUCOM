@@ -26,14 +26,14 @@ class OAuth2IntegrationTest {
     private UserRepository userRepository;
 
     @Test
-    @DisplayName("GET /auth/oauth2/urls - 소셜 로그인 URL 목록 반환")
+    @DisplayName("GET /auth/oauth2/urls - 소셜 로그인 URL 목록 반환 (구글, 네이버)")
     void getOAuth2Urls() throws Exception {
         mockMvc.perform(get("/auth/oauth2/urls"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.google").exists())
-                .andExpect(jsonPath("$.data.kakao").exists())
-                .andExpect(jsonPath("$.data.naver").exists());
+                .andExpect(jsonPath("$.data.naver").exists())
+                .andExpect(jsonPath("$.data.kakao").doesNotExist());
     }
 
     @Test
@@ -45,17 +45,6 @@ class OAuth2IntegrationTest {
 
         String redirectUrl = result.getResponse().getRedirectedUrl();
         assertThat(redirectUrl).contains("accounts.google.com");
-    }
-
-    @Test
-    @DisplayName("GET /oauth2/authorize/kakao - Kakao OAuth2 리다이렉트")
-    void kakaoOAuth2Redirect() throws Exception {
-        MvcResult result = mockMvc.perform(get("/oauth2/authorize/kakao"))
-                .andExpect(status().is3xxRedirection())
-                .andReturn();
-
-        String redirectUrl = result.getResponse().getRedirectedUrl();
-        assertThat(redirectUrl).contains("kauth.kakao.com");
     }
 
     @Test

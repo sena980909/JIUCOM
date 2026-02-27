@@ -32,29 +32,6 @@ class CustomOAuth2UserServiceTest {
     }
 
     @Test
-    @DisplayName("OAuth2UserInfoFactory - Kakao 사용자 정보 파싱")
-    void kakaoUserInfoParsing() {
-        Map<String, Object> profile = new HashMap<>();
-        profile.put("nickname", "카카오유저");
-        profile.put("profile_image_url", "https://k.kakaocdn.net/photo.jpg");
-
-        Map<String, Object> kakaoAccount = new HashMap<>();
-        kakaoAccount.put("email", "user@kakao.com");
-        kakaoAccount.put("profile", profile);
-
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("id", 123456789L);
-        attributes.put("kakao_account", kakaoAccount);
-
-        OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(SocialType.KAKAO, attributes);
-
-        assertThat(userInfo.getId()).isEqualTo("123456789");
-        assertThat(userInfo.getEmail()).isEqualTo("user@kakao.com");
-        assertThat(userInfo.getNickname()).isEqualTo("카카오유저");
-        assertThat(userInfo.getProfileImageUrl()).isEqualTo("https://k.kakaocdn.net/photo.jpg");
-    }
-
-    @Test
     @DisplayName("OAuth2UserInfoFactory - Naver 사용자 정보 파싱")
     void naverUserInfoParsing() {
         Map<String, Object> response = new HashMap<>();
@@ -75,25 +52,6 @@ class CustomOAuth2UserServiceTest {
     }
 
     @Test
-    @DisplayName("OAuth2UserInfoFactory - Kakao 이메일 없는 경우 null 반환")
-    void kakaoUserInfoWithoutEmail() {
-        Map<String, Object> profile = new HashMap<>();
-        profile.put("nickname", "카카오유저");
-
-        Map<String, Object> kakaoAccount = new HashMap<>();
-        kakaoAccount.put("profile", profile);
-
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("id", 123456789L);
-        attributes.put("kakao_account", kakaoAccount);
-
-        OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(SocialType.KAKAO, attributes);
-
-        assertThat(userInfo.getId()).isEqualTo("123456789");
-        assertThat(userInfo.getEmail()).isNull();
-    }
-
-    @Test
     @DisplayName("OAuth2UserInfoFactory - Naver response 없는 경우 null 반환")
     void naverUserInfoWithoutResponse() {
         Map<String, Object> attributes = new HashMap<>();
@@ -108,7 +66,6 @@ class CustomOAuth2UserServiceTest {
     @DisplayName("OAuth2UserInfoFactory - registrationId로 SocialType 변환")
     void getSocialTypeFromRegistrationId() {
         assertThat(OAuth2UserInfoFactory.getSocialType("google")).isEqualTo(SocialType.GOOGLE);
-        assertThat(OAuth2UserInfoFactory.getSocialType("kakao")).isEqualTo(SocialType.KAKAO);
         assertThat(OAuth2UserInfoFactory.getSocialType("naver")).isEqualTo(SocialType.NAVER);
         assertThat(OAuth2UserInfoFactory.getSocialType("GOOGLE")).isEqualTo(SocialType.GOOGLE);
     }

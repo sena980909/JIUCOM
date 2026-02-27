@@ -14,7 +14,6 @@ public class OAuth2UserInfoFactory {
     public static OAuth2UserInfo getOAuth2UserInfo(SocialType socialType, Map<String, Object> attributes) {
         return switch (socialType) {
             case GOOGLE -> new GoogleOAuth2UserInfo(attributes);
-            case KAKAO -> new KakaoOAuth2UserInfo(attributes);
             case NAVER -> new NaverOAuth2UserInfo(attributes);
             default -> throw new GlobalException(GlobalErrorCode.OAUTH_INVALID_PROVIDER);
         };
@@ -23,7 +22,6 @@ public class OAuth2UserInfoFactory {
     public static SocialType getSocialType(String registrationId) {
         return switch (registrationId.toLowerCase()) {
             case "google" -> SocialType.GOOGLE;
-            case "kakao" -> SocialType.KAKAO;
             case "naver" -> SocialType.NAVER;
             default -> throw new GlobalException(GlobalErrorCode.OAUTH_INVALID_PROVIDER);
         };
