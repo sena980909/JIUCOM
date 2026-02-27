@@ -20,17 +20,17 @@ const categories = [
   { value: 'RAM', label: '메모리' },
   { value: 'SSD', label: 'SSD' },
   { value: 'HDD', label: 'HDD' },
-  { value: 'PSU', label: '파워서플라이' },
+  { value: 'POWER_SUPPLY', label: '파워서플라이' },
   { value: 'CASE', label: '케이스' },
   { value: 'COOLER', label: '쿨러' },
 ];
 
 const sortOptions = [
-  { value: '', label: '기본 정렬' },
+  { value: 'popular', label: '추천순' },
   { value: 'price_asc', label: '가격 낮은 순' },
   { value: 'price_desc', label: '가격 높은 순' },
   { value: 'name_asc', label: '이름 순' },
-  { value: 'newest', label: '최신 순' },
+  { value: 'latest', label: '최신 순' },
 ];
 
 export default function PartFilter({ onFilter, initialValues = {} }: PartFilterProps) {
@@ -41,7 +41,7 @@ export default function PartFilter({ onFilter, initialValues = {} }: PartFilterP
   const [maxPrice, setMaxPrice] = useState<string>(
     initialValues.maxPrice != null ? String(initialValues.maxPrice) : '',
   );
-  const [sort, setSort] = useState(initialValues.sort || '');
+  const [sort, setSort] = useState(initialValues.sort || 'popular');
 
   const handleApply = () => {
     const values: FilterValues = {};
@@ -56,8 +56,8 @@ export default function PartFilter({ onFilter, initialValues = {} }: PartFilterP
     setCategory('');
     setMinPrice('');
     setMaxPrice('');
-    setSort('');
-    onFilter({});
+    setSort('popular');
+    onFilter({ sort: 'popular' });
   };
 
   return (

@@ -11,7 +11,7 @@ export default function PartList() {
   const category = searchParams.get('category') || undefined;
   const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
   const maxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined;
-  const sort = searchParams.get('sort') || undefined;
+  const sort = searchParams.get('sort') || 'popular';
   const keyword = searchParams.get('keyword') || undefined;
 
   const params: PartsParams = {
