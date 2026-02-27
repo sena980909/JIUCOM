@@ -21,15 +21,15 @@ export interface UpdatePostRequest {
 export interface Post {
   id: number;
   title: string;
-  content: string;
+  content?: string;
   boardType: string;
   viewCount: number;
   likeCount: number;
   commentCount: number;
-  userId: number;
-  nickname: string;
+  authorId?: number;
+  authorNickname: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface PageResponse<T> {

@@ -12,7 +12,8 @@ const BOARD_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
   FREE: { label: '자유', color: 'bg-blue-100 text-blue-700' },
   QNA: { label: 'Q&A', color: 'bg-green-100 text-green-700' },
   REVIEW: { label: '리뷰', color: 'bg-purple-100 text-purple-700' },
-  NOTICE: { label: '공지', color: 'bg-red-100 text-red-700' },
+  NEWS: { label: '뉴스', color: 'bg-red-100 text-red-700' },
+  GUIDE: { label: '가이드', color: 'bg-orange-100 text-orange-700' },
 };
 
 function formatDate(dateString: string): string {
@@ -121,7 +122,7 @@ export default function PostDetail() {
     createCommentMutation.mutate(newComment.trim());
   }
 
-  const isOwner = user?.id === post?.userId;
+  const isOwner = user?.id === post?.authorId;
   const boardConfig = post
     ? BOARD_TYPE_CONFIG[post.boardType] ?? {
         label: post.boardType,
@@ -204,7 +205,7 @@ export default function PostDetail() {
         <h1 className="text-2xl font-bold text-gray-900 mb-3">{post.title}</h1>
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div className="flex items-center gap-3">
-            <span className="font-medium text-gray-700">{post.nickname}</span>
+            <span className="font-medium text-gray-700">{post.authorNickname}</span>
             <span>{formatDate(post.createdAt)}</span>
           </div>
           <div className="flex items-center gap-3">

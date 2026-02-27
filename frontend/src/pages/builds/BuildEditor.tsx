@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -9,33 +9,42 @@ import {
   type CreateBuildRequest,
   type UpdateBuildRequest,
 } from '../../api/builds';
+import { type Part } from '../../api/parts';
 import { useAuth } from '../../hooks/useAuth';
-import BuildPartSelector from '../../components/builds/BuildPartSelector';
+import PartSelectorModal from '../../components/builds/PartSelectorModal';
+import SelectedPartCard, { type SelectedPartInfo } from '../../components/builds/SelectedPartCard';
 import CompatibilityWarning from '../../components/builds/CompatibilityWarning';
 
-interface SelectedPartInfo {
-  partId: number;
-  partName: string;
-  category: string;
-  manufacturer: string;
-  lowestPrice: number | null;
-  quantity: number;
-}
+const CATEGORY_COLORS: Record<string, string> = {
+  CPU: 'bg-red-500',
+  MOTHERBOARD: 'bg-green-500',
+  RAM: 'bg-blue-500',
+  GPU: 'bg-purple-500',
+  SSD: 'bg-yellow-500',
+  HDD: 'bg-orange-500',
+  POWER_SUPPLY: 'bg-cyan-500',
+  CASE: 'bg-gray-500',
+  COOLER: 'bg-teal-500',
+};
 
 const BUILD_CATEGORIES = [
-  { key: 'CPU', label: 'CPU', icon: '🔲' },
-  { key: 'MOTHERBOARD', label: '메인보드', icon: '🟩' },
-  { key: 'RAM', label: '메모리 (RAM)', icon: '🟦' },
-  { key: 'GPU', label: '그래픽카드 (GPU)', icon: '🟥' },
-  { key: 'SSD', label: 'SSD', icon: '💾' },
-  { key: 'HDD', label: 'HDD', icon: '💿' },
-  { key: 'POWER_SUPPLY', label: '파워서플라이', icon: '⚡' },
-  { key: 'CASE', label: '케이스', icon: '🖥' },
-  { key: 'COOLER', label: '쿨러', icon: '❄' },
+  { key: 'CPU', label: 'CPU' },
+  { key: 'MOTHERBOARD', label: '메인보드' },
+  { key: 'RAM', label: '메모리 (RAM)' },
+  { key: 'GPU', label: '그래픽카드 (GPU)' },
+  { key: 'SSD', label: 'SSD' },
+  { key: 'HDD', label: 'HDD' },
+  { key: 'POWER_SUPPLY', label: '파워서플라이' },
+  { key: 'CASE', label: '케이스' },
+  { key: 'COOLER', label: '쿨러' },
 ] as const;
 
 const REQUIRED_CATEGORIES = ['CPU', 'MOTHERBOARD', 'POWER_SUPPLY'];
 const UNIQUE_CATEGORIES = ['CPU', 'MOTHERBOARD', 'CASE', 'POWER_SUPPLY'];
+
+const THUMB_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none"><rect width="32" height="32" rx="4" fill="#f3f4f6"/><path d="M10 22l4-5 3 4 4-6 5 7H10z" fill="#d1d5db"/></svg>'
+);
 
 export default function BuildEditor() {
   const { id } = useParams<{ id: string }>();
@@ -54,6 +63,9 @@ export default function BuildEditor() {
     });
     return initial;
   });
+
+  // Modal state
+  const [modalCategory, setModalCategory] = useState<{ key: string; label: string } | null>(null);
 
   // Fetch existing build for edit mode
   const { data: existingBuild, isLoading: isBuildLoading } = useQuery({
@@ -99,7 +111,7 @@ export default function BuildEditor() {
     }, 0);
   }, [selectedParts]);
 
-  // Calculate compatibility warnings (client-side)
+  // Calculate compatibility warnings
   const compatibilityWarnings = useMemo(() => {
     const warnings: string[] = [];
     const activeParts = Object.values(selectedParts).filter(
@@ -130,7 +142,7 @@ export default function BuildEditor() {
 
   const selectedPartCount = Object.values(selectedParts).filter((p) => p !== null).length;
 
-  // Create mutation
+  // Mutations
   const createMutation = useMutation({
     mutationFn: (data: CreateBuildRequest) => createBuild(data),
     onSuccess: (result) => {
@@ -142,7 +154,6 @@ export default function BuildEditor() {
     },
   });
 
-  // Update mutation
   const updateMutation = useMutation({
     mutationFn: (data: UpdateBuildRequest) => updateBuild(buildId, data),
     onSuccess: (result) => {
@@ -154,12 +165,44 @@ export default function BuildEditor() {
     },
   });
 
-  const handlePartSelect = (category: string, part: SelectedPartInfo | null) => {
+  const handlePartSelectFromModal = useCallback((part: Part) => {
+    if (!modalCategory) return;
     setSelectedParts((prev) => ({
       ...prev,
-      [category]: part,
+      [modalCategory.key]: {
+        partId: part.id,
+        partName: part.name,
+        category: part.category,
+        manufacturer: part.manufacturer,
+        lowestPrice: part.lowestPrice ?? null,
+        quantity: 1,
+        imageUrl: part.imageUrl,
+        specs: part.specs,
+      },
     }));
-  };
+    setModalCategory(null);
+  }, [modalCategory]);
+
+  const handleQuantityChange = useCallback((category: string, quantity: number) => {
+    if (quantity < 1) return;
+    setSelectedParts((prev) => {
+      const part = prev[category];
+      if (!part) return prev;
+      return { ...prev, [category]: { ...part, quantity } };
+    });
+  }, []);
+
+  const handleRemovePart = useCallback((category: string) => {
+    setSelectedParts((prev) => ({ ...prev, [category]: null }));
+  }, []);
+
+  const handleUpdatePartInfo = useCallback((category: string, updates: Partial<SelectedPartInfo>) => {
+    setSelectedParts((prev) => {
+      const part = prev[category];
+      if (!part) return prev;
+      return { ...prev, [category]: { ...part, ...updates } };
+    });
+  }, []);
 
   const handleClearAll = () => {
     const cleared: Record<string, SelectedPartInfo | null> = {};
@@ -173,9 +216,8 @@ export default function BuildEditor() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // If not logged in, redirect to login
     if (!isAuthenticated) {
-      toast('로그인 후 견적을 저장할 수 있습니다.', { icon: '🔒' });
+      toast('로그인 후 견적을 저장할 수 있습니다.', { icon: '\uD83D\uDD12' });
       navigate('/login');
       return;
     }
@@ -218,7 +260,6 @@ export default function BuildEditor() {
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
-  // Loading existing build
   if (isEditMode && isBuildLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -258,39 +299,59 @@ export default function BuildEditor() {
           {/* Left: Part Selection (2/3 width) */}
           <div className="lg:col-span-2 space-y-3">
             {BUILD_CATEGORIES.map((cat) => {
+              const part = selectedParts[cat.key];
               const isRequired = REQUIRED_CATEGORIES.includes(cat.key);
+              const dotColor = CATEGORY_COLORS[cat.key] || 'bg-gray-400';
+
               return (
                 <div
                   key={cat.key}
-                  className={`bg-white border rounded-lg overflow-hidden ${
-                    selectedParts[cat.key]
-                      ? 'border-blue-200 bg-blue-50/30'
+                  className={`bg-white border rounded-lg overflow-hidden transition-colors ${
+                    part
+                      ? 'border-blue-200'
                       : isRequired
-                        ? 'border-orange-200'
-                        : 'border-gray-200'
+                        ? 'border-dashed border-orange-300'
+                        : 'border-dashed border-gray-300'
                   }`}
                 >
-                  <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-                    <span className="text-base">{cat.icon}</span>
+                  {/* Category Header */}
+                  <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50/80 border-b border-gray-100">
+                    <span className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
                     <span className="text-sm font-semibold text-gray-800">{cat.label}</span>
-                    {isRequired && !selectedParts[cat.key] && (
+                    {isRequired && !part && (
                       <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-medium">
                         필수
                       </span>
                     )}
-                    {selectedParts[cat.key] && (
+                    {part && (
                       <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">
                         선택됨
                       </span>
                     )}
                   </div>
+
+                  {/* Content */}
                   <div className="p-3">
-                    <BuildPartSelector
-                      category={cat.key}
-                      categoryLabel={cat.label}
-                      selectedPart={selectedParts[cat.key]}
-                      onSelect={(part) => handlePartSelect(cat.key, part)}
-                    />
+                    {part ? (
+                      <SelectedPartCard
+                        part={part}
+                        onQuantityChange={(qty) => handleQuantityChange(cat.key, qty)}
+                        onChange={() => setModalCategory(cat)}
+                        onRemove={() => handleRemovePart(cat.key)}
+                        onUpdatePartInfo={(updates) => handleUpdatePartInfo(cat.key, updates)}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setModalCategory(cat)}
+                        className="w-full flex items-center justify-center gap-2 py-4 text-sm text-gray-400 hover:text-blue-500 hover:bg-blue-50/50 rounded-md transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        부품을 선택하세요
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -304,15 +365,22 @@ export default function BuildEditor() {
               <div className="bg-white border border-gray-200 rounded-lg p-5">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">견적 요약</h2>
 
-                {/* Selected parts summary */}
                 <div className="space-y-2 mb-4">
                   {BUILD_CATEGORIES.map((cat) => {
                     const part = selectedParts[cat.key];
                     if (!part) return null;
                     return (
-                      <div key={cat.key} className="flex justify-between items-start text-sm">
-                        <div className="flex-1 min-w-0 mr-2">
-                          <span className="text-gray-500 text-xs">{cat.label}</span>
+                      <div key={cat.key} className="flex items-center gap-2 text-sm">
+                        <img
+                          src={part.imageUrl || THUMB_FALLBACK}
+                          alt=""
+                          className="w-6 h-6 object-contain rounded bg-gray-50 shrink-0"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = THUMB_FALLBACK;
+                          }}
+                        />
+                        <div className="flex-1 min-w-0 mr-1">
+                          <span className="text-gray-500 text-[10px]">{cat.label}</span>
                           <p className="text-gray-800 truncate text-xs">{part.partName}</p>
                         </div>
                         <span className="text-gray-900 font-medium text-xs whitespace-nowrap">
@@ -333,10 +401,8 @@ export default function BuildEditor() {
                   )}
                 </div>
 
-                {/* Divider */}
                 {selectedPartCount > 0 && <div className="border-t border-gray-200 my-3" />}
 
-                {/* Total */}
                 <div className="flex items-center justify-between">
                   <span className="text-base font-semibold text-gray-900">총 예상 금액</span>
                   <span className="text-xl font-bold text-blue-600">
@@ -447,6 +513,15 @@ export default function BuildEditor() {
           </div>
         </div>
       </form>
+
+      {/* Part Selector Modal */}
+      <PartSelectorModal
+        isOpen={!!modalCategory}
+        category={modalCategory?.key || ''}
+        categoryLabel={modalCategory?.label || ''}
+        onSelect={handlePartSelectFromModal}
+        onClose={() => setModalCategory(null)}
+      />
     </div>
   );
 }

@@ -360,7 +360,7 @@ INSERT INTO build_parts (build_id, part_id, quantity, unit_price, is_deleted, cr
 -- 7. 샘플 게시글 (8개)
 -- =============================================
 INSERT INTO posts (user_id, board_type, title, content, view_count, like_count, comment_count, is_deleted, created_at, updated_at)
-VALUES (1, 'NOTICE', '지우컴 오픈 안내', '안녕하세요! 컴퓨터 부품 가격비교 플랫폼 지우컴이 오픈했습니다.\n\n주요 기능:\n- 부품 가격 비교 (5개 쇼핑몰)\n- PC 견적 만들기 (호환성 자동 검사)\n- 가격 변동 알림\n- 커뮤니티\n\n많은 이용 부탁드립니다!', 312, 28, 3, false, DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_SUB(NOW(), INTERVAL 10 DAY));
+VALUES (1, 'NEWS', '지우컴 오픈 안내', '안녕하세요! 컴퓨터 부품 가격비교 플랫폼 지우컴이 오픈했습니다.\n\n주요 기능:\n- 부품 가격 비교 (5개 쇼핑몰)\n- PC 견적 만들기 (호환성 자동 검사)\n- 가격 변동 알림\n- 커뮤니티\n\n많은 이용 부탁드립니다!', 312, 28, 3, false, DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_SUB(NOW(), INTERVAL 10 DAY));
 
 INSERT INTO posts (user_id, board_type, title, content, view_count, like_count, comment_count, is_deleted, created_at, updated_at)
 VALUES (2, 'FREE', '첫 게이밍 PC 조립 후기', '7800X3D + RTX 4060 Ti 조합으로 150만원대 견적을 짜서 조립했습니다.\n\n솔직히 처음 조립이라 걱정 많이 했는데, 지우컴에서 호환성 체크해주니까 편했어요.\n\n1440p에서 대부분 게임 100프레임 이상 나오고 매우 만족합니다!\n\n다음엔 RTX 5070 나오면 업그레이드 할 예정입니다.', 187, 15, 4, false, DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 7 DAY));

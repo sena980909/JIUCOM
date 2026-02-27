@@ -24,7 +24,7 @@ public class PostListResponse {
                 .id(post.getId())
                 .boardType(post.getBoardType().name())
                 .title(post.getTitle())
-                .authorNickname(post.getAuthor().getNickname())
+                .authorNickname(post.getAuthor() != null ? post.getAuthor().getNickname() : "(알 수 없음)")
                 .viewCount(post.getViewCount())
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getCommentCount())

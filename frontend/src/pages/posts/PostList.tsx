@@ -11,7 +11,8 @@ const BOARD_TABS = [
   { value: 'FREE', label: '자유게시판' },
   { value: 'QNA', label: '질문답변' },
   { value: 'REVIEW', label: '리뷰' },
-  { value: 'NOTICE', label: '공지사항' },
+  { value: 'NEWS', label: '뉴스/공지' },
+  { value: 'GUIDE', label: '가이드' },
 ] as const;
 
 export default function PostList() {
@@ -25,16 +26,13 @@ export default function PostList() {
 
   const { data, isLoading, isError } = useQuery<PageResponse<Post>>({
     queryKey: ['posts', boardType, debouncedKeyword, page],
-    queryFn: async () => {
-      const result = await getPosts({
+    queryFn: () =>
+      getPosts({
         boardType: boardType || undefined,
         keyword: debouncedKeyword || undefined,
         page,
         size: pageSize,
-      });
-      // Handle ApiResponse wrapper
-      return (result as { data?: PageResponse<Post> }).data ?? result;
-    },
+      }),
   });
 
   function handleTabChange(newBoardType: string) {

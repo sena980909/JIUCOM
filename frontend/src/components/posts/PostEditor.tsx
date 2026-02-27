@@ -7,7 +7,8 @@ const BOARD_TYPES = [
   { value: 'FREE', label: '자유게시판' },
   { value: 'QNA', label: '질문답변' },
   { value: 'REVIEW', label: '리뷰' },
-  { value: 'NOTICE', label: '공지사항' },
+  { value: 'NEWS', label: '뉴스/공지' },
+  { value: 'GUIDE', label: '가이드' },
 ] as const;
 
 interface PostEditorProps {

@@ -10,12 +10,25 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 
 export default function Home() {
   const {
-    data: partsData,
-    isLoading: isPartsLoading,
+    data: cpuData,
+    isLoading: isCpuLoading,
   } = useQuery({
-    queryKey: ['home', 'parts'],
-    queryFn: () => getParts({ page: 0, size: 6 }),
+    queryKey: ['home', 'parts', 'CPU'],
+    queryFn: () => getParts({ category: 'CPU', page: 0, size: 3 }),
   });
+
+  const {
+    data: gpuData,
+    isLoading: isGpuLoading,
+  } = useQuery({
+    queryKey: ['home', 'parts', 'GPU'],
+    queryFn: () => getParts({ category: 'GPU', page: 0, size: 3 }),
+  });
+
+  const partsData = (cpuData && gpuData) ? {
+    content: [...(cpuData.content || []), ...(gpuData.content || [])],
+  } : undefined;
+  const isPartsLoading = isCpuLoading || isGpuLoading;
 
   const {
     data: postsData,

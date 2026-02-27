@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getBuilds } from '../../api/builds';
-import { useAuth } from '../../hooks/useAuth';
 import BuildCard from '../../components/builds/BuildCard';
 
 export default function BuildList() {
-  const { isAuthenticated } = useAuth();
   const [page, setPage] = useState(0);
   const size = 12;
 
@@ -25,17 +23,15 @@ export default function BuildList() {
             다른 사용자들이 공유한 PC 견적을 확인해보세요
           </p>
         </div>
-        {isAuthenticated && (
-          <Link
-            to="/builds/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            새 견적 만들기
-          </Link>
-        )}
+        <Link
+          to="/builds/new"
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          새 견적 만들기
+        </Link>
       </div>
 
       {/* Loading */}
@@ -70,14 +66,12 @@ export default function BuildList() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           <p className="text-gray-500 mb-4">아직 공개된 견적이 없습니다.</p>
-          {isAuthenticated && (
-            <Link
-              to="/builds/new"
-              className="text-sm text-blue-600 hover:text-blue-700 underline"
-            >
-              첫 번째 견적을 만들어보세요
-            </Link>
-          )}
+          <Link
+            to="/builds/new"
+            className="text-sm text-blue-600 hover:text-blue-700 underline"
+          >
+            첫 번째 견적을 만들어보세요
+          </Link>
         </div>
       )}
 

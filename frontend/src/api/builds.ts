@@ -66,38 +66,32 @@ export interface PageResponse<T> {
   number: number;
 }
 
-interface ApiResponseWrapper<T> {
-  success: boolean;
-  message: string;
-  data: T;
-}
-
 export const getBuilds = async (params: { page?: number; size?: number } = {}) => {
-  const response = await api.get<ApiResponseWrapper<PageResponse<BuildListItem>>>('/builds', { params });
-  return response.data.data;
+  const response = await api.get<PageResponse<BuildListItem>>('/builds', { params });
+  return response.data;
 };
 
 export const getMyBuilds = async (params: { page?: number; size?: number } = {}) => {
-  const response = await api.get<ApiResponseWrapper<PageResponse<BuildListItem>>>('/builds/my', { params });
-  return response.data.data;
+  const response = await api.get<PageResponse<BuildListItem>>('/builds/my', { params });
+  return response.data;
 };
 
 export const getBuildDetail = async (id: number) => {
-  const response = await api.get<ApiResponseWrapper<BuildDetail>>(`/builds/${id}`);
-  return response.data.data;
+  const response = await api.get<BuildDetail>(`/builds/${id}`);
+  return response.data;
 };
 
 export const createBuild = async (data: CreateBuildRequest) => {
-  const response = await api.post<ApiResponseWrapper<BuildDetail>>('/builds', data);
-  return response.data.data;
+  const response = await api.post<BuildDetail>('/builds', data);
+  return response.data;
 };
 
 export const updateBuild = async (id: number, data: UpdateBuildRequest) => {
-  const response = await api.put<ApiResponseWrapper<BuildDetail>>(`/builds/${id}`, data);
-  return response.data.data;
+  const response = await api.put<BuildDetail>(`/builds/${id}`, data);
+  return response.data;
 };
 
 export const deleteBuild = async (id: number) => {
-  const response = await api.delete<ApiResponseWrapper<void>>(`/builds/${id}`);
+  const response = await api.delete(`/builds/${id}`);
   return response.data;
 };
