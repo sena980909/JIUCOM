@@ -208,6 +208,8 @@ frontend/src/
 │   └── admin.ts          # 관리자
 ├── contexts/
 │   └── AuthContext.tsx    # JWT 토큰 + 유저 정보 전역 관리
+├── utils/
+│   └── specsHelper.ts    # 카테고리별 스펙 요약 추출 유틸
 ├── hooks/
 │   ├── useAuth.ts        # 인증 상태 훅
 │   ├── useWebSocket.ts   # 실시간 알림 (STOMP over SockJS)
@@ -216,7 +218,7 @@ frontend/src/
 │   ├── layout/           # Header, Footer, Sidebar, Layout
 │   ├── common/           # Pagination, Modal, SearchBar, ImageUpload, ProtectedRoute
 │   ├── parts/            # PartCard, PartFilter, PriceChart
-│   ├── builds/           # BuildCard, BuildPartSelector, CompatibilityWarning
+│   ├── builds/           # BuildCard, PartSelectorModal, SelectedPartCard, CompatibilityWarning
 │   ├── posts/            # PostCard, PostEditor, CommentTree
 │   └── reviews/          # ReviewCard
 └── pages/
@@ -262,7 +264,7 @@ frontend/src/
 | `/parts` | PartList | - | 카테고리 필터, 검색, 정렬 |
 | `/parts/:id` | PartDetail | - | 가격 비교, 차트, 리뷰, 즐겨찾기 |
 | `/builds` | BuildList | - | 공개 견적 목록 |
-| `/builds/new` | BuildEditor | △ | 다나와 스타일 견적 빌더 (비로그인 부품 선택, 저장만 로그인) |
+| `/builds/new` | BuildEditor | △ | 견적 빌더 (이미지+스펙+추천순 모달, 비로그인 부품 선택, 저장만 로그인) |
 | `/builds/:id` | BuildDetail | - | 견적 상세 (부품 목록, 총 가격) |
 | `/builds/:id/edit` | BuildEditor | O | 견적 수정 |
 | `/posts` | PostList | - | BoardType 탭 (자유/QNA/리뷰/공지) |
@@ -299,7 +301,7 @@ frontend/src/
 
 | 메서드 | 엔드포인트 | 설명 |
 |--------|-----------|------|
-| GET | /parts | 부품 검색 (QueryDSL 동적 필터) |
+| GET | /parts | 부품 검색 (QueryDSL 동적 필터, 추천순/가격순 정렬) |
 | GET | /parts/{id} | 부품 상세 (가격 비교 포함) |
 | GET | /parts/categories | 카테고리 목록 |
 | GET | /prices/compare | 판매처별 가격 비교 |
@@ -420,8 +422,8 @@ Docker 기동 시 자동으로 프로비저닝되는 대시보드:
 ## CI/CD
 
 - **GitHub Actions**: push/PR 시 자동 빌드 + 테스트 (`.github/workflows/ci.yml`)
-- **Flyway**: V1 (초기 스키마), V2 (좋아요 + 검색 인덱스), V3 (결제 테이블), V4 (중복 인덱스 정리)
-- **Docker**: 멀티스테이지 빌드, JVM container-aware 메모리 설정
+- **Flyway**: V1 (초기 스키마), V2 (좋아요 + 검색 인덱스), V3 (결제 테이블), V4 (중복 인덱스 정리), V5 (인기도 점수 + 추천순 정렬)
+- **Docker**: 멀티스테이지 빌드, JVM container-aware 메모리 설정 (G1GC, MaxRAMPercentage=55%)
 
 ## 환경변수
 
@@ -450,7 +452,7 @@ Docker 기동 시 자동으로 프로비저닝되는 대시보드:
 |------|------|
 | API | 네이버 검색 > 쇼핑 (v1/search/shop.json) |
 | 카테고리 | CPU, GPU, RAM, SSD, HDD, 메인보드, 파워, 케이스, 쿨러 (9종) |
-| 필터링 | 카테고리별 블랙리스트 키워드 (조립PC, 노트북 등 비관련 상품 자동 제외) |
+| 필터링 | 공통 블랙리스트 (30+ 키워드) + 카테고리별 블랙리스트 (조립PC, 노트북, 중고, 청소솔 등 자동 제외) |
 | 자동 처리 | 부품 생성/업데이트, 판매자 등록, 가격 이력 기록 |
 
 ```bash
@@ -462,6 +464,31 @@ curl -X POST http://localhost:8080/api/v1/admin/naver/import/all \
 curl -X POST http://localhost:8080/api/v1/admin/naver/import/GPU \
   -H "Authorization: Bearer {admin-token}"
 ```
+
+## 주요 기능 상세
+
+### 견적 빌더 (다나와 스타일)
+
+부품 카테고리별 시각적 선택 모달을 통해 PC 견적을 구성합니다.
+
+- **부품 선택 모달**: 이미지 + 제조사 + 가격이 포함된 2열 카드 그리드
+- **정렬 옵션**: 추천순 (인기도 점수 기반) / 낮은가격순 / 높은가격순
+- **검색**: 부품명 실시간 검색 (300ms 디바운스)
+- **스펙 표시**: 선택된 부품의 핵심 사양 자동 요약 (예: "8코어 / 16스레드 / AM5 / 120W")
+- **비로그인 사용 가능**: 부품 선택은 자유, 저장만 로그인 필요
+
+### 인기도 점수 시스템
+
+부품별 인기도 점수를 자동 산출하여 추천순 정렬에 활용합니다.
+
+| 기준 | 점수 |
+|------|------|
+| 메인스트림 가격대 | 50점 (카테고리별 기준 상이) |
+| 하이엔드 가격대 | 40점 |
+| 보급형 가격대 | 30점 |
+| 구형/초저가 | 10점 |
+| 유명 브랜드 보너스 | +20점 (AMD Ryzen, Intel Core, ASUS, MSI 등) |
+| 현세대 모델 보너스 | +10점 (RTX 5060, Ryzen 9600X, i5-14600K 등) |
 
 ## 문서
 
