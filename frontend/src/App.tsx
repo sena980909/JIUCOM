@@ -37,6 +37,7 @@ function App() {
         <Route path="/parts/:id" element={<PartDetail />} />
         <Route path="/builds" element={<BuildList />} />
         <Route path="/builds/:id" element={<BuildDetail />} />
+        <Route path="/builds/new" element={<BuildEditor />} />
         <Route path="/posts" element={<PostList />} />
         <Route path="/posts/:id" element={<PostDetail />} />
         <Route path="/search" element={<SearchResults />} />
@@ -44,7 +45,6 @@ function App() {
 
         {/* Authenticated routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/builds/new" element={<BuildEditor />} />
           <Route path="/builds/:id/edit" element={<BuildEditor />} />
           <Route path="/posts/new" element={<PostEditor />} />
           <Route path="/posts/:id/edit" element={<PostEditor />} />
