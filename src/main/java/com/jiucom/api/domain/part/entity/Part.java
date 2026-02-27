@@ -39,6 +39,10 @@ public class Part extends BaseTimeEntity {
 
     private Integer highestPrice;
 
+    @Column(columnDefinition = "INT DEFAULT 0")
+    @Builder.Default
+    private Integer popularityScore = 0;
+
     public void updateName(String name) {
         this.name = name;
     }

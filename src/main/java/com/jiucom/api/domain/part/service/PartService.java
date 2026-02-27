@@ -121,6 +121,7 @@ public class PartService {
             return Sort.unsorted();
         }
         return switch (sortParam) {
+            case "popular" -> Sort.by(Sort.Direction.DESC, "popularity");
             case "price_asc" -> Sort.by(Sort.Direction.ASC, "price");
             case "price_desc" -> Sort.by(Sort.Direction.DESC, "price");
             case "name_asc" -> Sort.by(Sort.Direction.ASC, "name");

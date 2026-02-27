@@ -11,6 +11,12 @@ interface PartSelectorModalProps {
   onClose: () => void;
 }
 
+const SORT_OPTIONS = [
+  { key: 'popular', label: '추천순' },
+  { key: 'price_asc', label: '낮은가격순' },
+  { key: 'price_desc', label: '높은가격순' },
+] as const;
+
 const FALLBACK_IMAGE = 'data:image/svg+xml,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="none"><rect width="80" height="80" rx="8" fill="#f3f4f6"/><path d="M28 52l8-10 6 7 8-10 10 13H28z" fill="#d1d5db"/><circle cx="34" cy="34" r="4" fill="#d1d5db"/></svg>'
 );
@@ -23,25 +29,27 @@ export default function PartSelectorModal({
   onClose,
 }: PartSelectorModalProps) {
   const [keyword, setKeyword] = useState('');
+  const [sortKey, setSortKey] = useState<string>('popular');
   const [page, setPage] = useState(0);
   const [allParts, setAllParts] = useState<Part[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const debouncedKeyword = useDebounce(keyword, 300);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Reset state when modal opens or search changes
+  // Reset state when modal opens or search/sort changes
   useEffect(() => {
     if (isOpen) {
       setPage(0);
       setAllParts([]);
       setHasMore(true);
     }
-  }, [isOpen, debouncedKeyword]);
+  }, [isOpen, debouncedKeyword, sortKey]);
 
-  // Reset keyword when modal closes
+  // Reset keyword and sort when modal closes
   useEffect(() => {
     if (!isOpen) {
       setKeyword('');
+      setSortKey('popular');
       setPage(0);
       setAllParts([]);
     }
@@ -75,12 +83,12 @@ export default function PartSelectorModal({
   }, [isOpen, onClose]);
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['parts-modal', category, debouncedKeyword, page],
+    queryKey: ['parts-modal', category, debouncedKeyword, sortKey, page],
     queryFn: () =>
       getParts({
         category,
         keyword: debouncedKeyword || undefined,
-        sort: 'price_asc',
+        sort: sortKey,
         page,
         size: 20,
       }),
@@ -127,6 +135,13 @@ export default function PartSelectorModal({
     setAllParts([]);
   };
 
+  const handleSortChange = (key: string) => {
+    if (key === sortKey) return;
+    setSortKey(key);
+    setPage(0);
+    setAllParts([]);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -153,8 +168,8 @@ export default function PartSelectorModal({
           </button>
         </div>
 
-        {/* Search */}
-        <div className="px-5 py-3 border-b border-gray-100">
+        {/* Search + Sort */}
+        <div className="px-5 py-3 border-b border-gray-100 space-y-2.5">
           <div className="relative">
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
@@ -173,11 +188,28 @@ export default function PartSelectorModal({
               className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
+          {/* Sort Buttons */}
+          <div className="flex gap-1.5">
+            {SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => handleSortChange(opt.key)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+                  sortKey === opt.key
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          {!debouncedKeyword && allParts.length > 0 && (
+          {!debouncedKeyword && sortKey === 'popular' && allParts.length > 0 && (
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
               추천 부품
             </p>
