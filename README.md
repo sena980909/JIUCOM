@@ -24,7 +24,7 @@
 | Language / Framework | Java 17, Spring Boot 3.4.2, Gradle Kotlin DSL |
 | Database | MySQL 8.0 (prod), H2 (dev/test), Redis 7 |
 | ORM / Migration | Spring Data JPA, QueryDSL 5.1.0, Flyway |
-| 인증 / 보안 | Spring Security, JWT (jjwt 0.12.6), OAuth2 (카카오/네이버/구글) |
+| 인증 / 보안 | Spring Security, JWT (jjwt 0.12.6), OAuth2 (구글/네이버) |
 | 실시간 | WebSocket (STOMP), SimpMessagingTemplate |
 | API 문서 | SpringDoc OpenAPI 2.7.0 (Swagger UI) |
 | 모니터링 | Micrometer + Prometheus + Grafana |
@@ -157,11 +157,12 @@ src/main/java/com/jiucom/api/
 │   ├── entity/          # BaseTimeEntity (createdAt, updatedAt, isDeleted, softDelete)
 │   ├── exception/       # GlobalException, ExceptionAdvice, ErrorCode
 │   ├── jwt/             # JwtTokenProvider, JwtAuthenticationFilter
-│   ├── oauth2/          # OAuth2 소셜 로그인 (카카오/네이버/구글)
+│   ├── oauth2/          # OAuth2 소셜 로그인 (구글/네이버)
 │   ├── response/        # ApiResponse<T>
 │   ├── util/            # RedisUtil
 │   ├── storage/         # StorageService (Local/S3), StorageConfig
 │   ├── email/           # EmailService (Mock/SMTP), EmailConfig
+│   ├── naver/           # 네이버 쇼핑 API (부품 가격 자동 수집)
 │   ├── logging/         # RequestLoggingFilter
 │   └── actuator/        # CustomMetricsConfig
 ├── domain/
@@ -255,13 +256,13 @@ frontend/src/
 | 라우트 | 페이지 | 인증 | 설명 |
 |--------|--------|------|------|
 | `/` | Home | - | 인기 부품, 최신글, 인기 견적 |
-| `/login` | Login | - | 이메일 + 카카오/네이버/구글 소셜 로그인 |
+| `/login` | Login | - | 이메일 + 구글/네이버 소셜 로그인 |
 | `/signup` | Signup | - | 회원가입 |
 | `/oauth/callback` | OAuthCallback | - | 소셜 로그인 콜백 |
 | `/parts` | PartList | - | 카테고리 필터, 검색, 정렬 |
 | `/parts/:id` | PartDetail | - | 가격 비교, 차트, 리뷰, 즐겨찾기 |
 | `/builds` | BuildList | - | 공개 견적 목록 |
-| `/builds/new` | BuildEditor | O | 견적 생성 (호환성 자동 검사) |
+| `/builds/new` | BuildEditor | △ | 다나와 스타일 견적 빌더 (비로그인 부품 선택, 저장만 로그인) |
 | `/builds/:id` | BuildDetail | - | 견적 상세 (부품 목록, 총 가격) |
 | `/builds/:id/edit` | BuildEditor | O | 견적 수정 |
 | `/posts` | PostList | - | BoardType 탭 (자유/QNA/리뷰/공지) |
@@ -401,20 +402,20 @@ Docker 기동 시 자동으로 프로비저닝되는 대시보드:
 | Rate Limit | dev: in-memory, prod: Redis (분당 100회) |
 | Security Headers | HSTS, CSP, X-Content-Type-Options, Referrer-Policy |
 | JWT | Access 1h, Refresh 7d (로테이션) |
-| OAuth2 | 카카오, 네이버, 구글 소셜 로그인 |
+| OAuth2 | 구글, 네이버 소셜 로그인 |
 | Nginx | Rate Limit (30 req/sec), X-Frame-Options, XSS Protection |
 
 ## 테스트
 
 ```bash
-# 전체 테스트 (113개)
+# 전체 테스트 (110개)
 ./gradlew test
 ```
 
 - 단위 테스트: JUnit 5 + Mockito (Service, Controller)
 - 통합 테스트: @SpringBootTest + TestRestTemplate (Auth, Post/Comment, Like)
 - OAuth2 테스트: CustomOAuth2UserService, OAuth2SuccessHandler, OAuth2Integration
-- 113 tests, 0 failures
+- 110 tests, 0 failures
 
 ## CI/CD
 
@@ -436,6 +437,31 @@ Docker 기동 시 자동으로 프로비저닝되는 대시보드:
 | CORS_ORIGINS | https://jiucom.com | 허용 도메인 (prod) |
 | ZIPKIN_ENDPOINT | http://localhost:9411/api/v2/spans | Zipkin 엔드포인트 |
 | GRAFANA_PASSWORD | admin | Grafana 관리자 비밀번호 |
+| NAVER_SHOPPING_CLIENT_ID | - | 네이버 쇼핑 API 클라이언트 ID |
+| NAVER_SHOPPING_CLIENT_SECRET | - | 네이버 쇼핑 API 시크릿 |
+
+## 외부 API 연동
+
+### 네이버 쇼핑 API
+
+네이버 검색 API를 통해 실제 컴퓨터 부품 가격 데이터를 자동 수집합니다.
+
+| 항목 | 내용 |
+|------|------|
+| API | 네이버 검색 > 쇼핑 (v1/search/shop.json) |
+| 카테고리 | CPU, GPU, RAM, SSD, HDD, 메인보드, 파워, 케이스, 쿨러 (9종) |
+| 필터링 | 카테고리별 블랙리스트 키워드 (조립PC, 노트북 등 비관련 상품 자동 제외) |
+| 자동 처리 | 부품 생성/업데이트, 판매자 등록, 가격 이력 기록 |
+
+```bash
+# 관리자 API로 전체 임포트
+curl -X POST http://localhost:8080/api/v1/admin/naver/import/all \
+  -H "Authorization: Bearer {admin-token}"
+
+# 카테고리별 임포트
+curl -X POST http://localhost:8080/api/v1/admin/naver/import/GPU \
+  -H "Authorization: Bearer {admin-token}"
+```
 
 ## 문서
 
