@@ -34,6 +34,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final RedisUtil redisUtil;
+    private final jakarta.persistence.EntityManager entityManager;
 
     @Transactional
     public JwtTokenResponse signup(SignupRequest request) {
@@ -123,6 +124,7 @@ public class AuthService {
 
         // 기존 리프레시 토큰 삭제 (로그인 시 기존 세션 무효화)
         refreshTokenRepository.deleteByUser(user);
+        entityManager.flush();
         tryDeleteRedisRefreshToken(user.getId());
 
         // DB 저장

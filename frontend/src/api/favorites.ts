@@ -15,15 +15,11 @@ export const getFavorites = async () => {
 };
 
 export const addFavorite = async (partId: number) => {
-  const response = await api.post('/favorites', null, {
-    params: { partId },
-  });
+  const response = await api.post(`/favorites/parts/${partId}`);
   return response.data;
 };
 
 export const removeFavorite = async (partId: number) => {
-  const response = await api.delete('/favorites', {
-    params: { partId },
-  });
+  const response = await api.delete(`/favorites/parts/${partId}`);
   return response.data;
 };

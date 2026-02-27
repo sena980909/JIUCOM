@@ -34,15 +34,14 @@ export interface CreateAlertRequest {
 }
 
 export const comparePrices = async (partId: number) => {
-  const response = await api.get<PriceComparison>('/prices/compare', {
-    params: { partId },
-  });
+  const response = await api.get<PriceComparison>(`/prices/parts/${partId}`);
   return response.data;
 };
 
 export const getPriceHistory = async (partId: number, params: { days?: number } = {}) => {
-  const response = await api.get<PriceHistoryEntry[]>('/prices/history', {
-    params: { partId, ...params },
+  const period = params.days ? `${params.days}d` : '30d';
+  const response = await api.get<PriceHistoryEntry[]>(`/prices/parts/${partId}/history`, {
+    params: { period },
   });
   return response.data;
 };

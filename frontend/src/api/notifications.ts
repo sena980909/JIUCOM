@@ -37,6 +37,6 @@ export const markAsRead = async (id: number) => {
 };
 
 export const markAllAsRead = async () => {
-  const response = await api.patch('/notifications/read');
+  const response = await api.patch('/notifications/read-all');
   return response.data;
 };

@@ -24,9 +24,7 @@ export interface Review {
 }
 
 export const getReviews = async (partId: number) => {
-  const response = await api.get<Review[]>('/reviews', {
-    params: { partId },
-  });
+  const response = await api.get<Review[]>(`/parts/${partId}/reviews`);
   return response.data;
 };
 

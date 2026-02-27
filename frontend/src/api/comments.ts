@@ -30,12 +30,12 @@ export const createComment = async (postId: number, data: CreateCommentRequest) 
   return response.data;
 };
 
-export const updateComment = async (postId: number, commentId: number, data: UpdateCommentRequest) => {
-  const response = await api.put<Comment>(`/posts/${postId}/comments/${commentId}`, data);
+export const updateComment = async (_postId: number, commentId: number, data: UpdateCommentRequest) => {
+  const response = await api.put<Comment>(`/comments/${commentId}`, data);
   return response.data;
 };
 
-export const deleteComment = async (postId: number, commentId: number) => {
-  const response = await api.delete(`/posts/${postId}/comments/${commentId}`);
+export const deleteComment = async (_postId: number, commentId: number) => {
+  const response = await api.delete(`/comments/${commentId}`);
   return response.data;
 };
