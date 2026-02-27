@@ -15,7 +15,9 @@ EXPOSE 8080
 
 ENTRYPOINT ["java", \
   "-XX:+UseContainerSupport", \
-  "-XX:MaxRAMPercentage=75.0", \
-  "-XX:InitialRAMPercentage=50.0", \
+  "-XX:MaxRAMPercentage=55.0", \
+  "-XX:InitialRAMPercentage=35.0", \
+  "-XX:+UseG1GC", \
+  "-XX:+UseStringDeduplication", \
   "-Djava.security.egd=file:/dev/./urandom", \
   "-jar", "app.jar"]
