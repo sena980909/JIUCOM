@@ -361,18 +361,33 @@ frontend/src/
 
 ### 배포 방법
 
+**백엔드 (EC2 Instance Connect + Docker Compose)**
+
 ```bash
-# EC2 초기 설정 (Docker, Git, Swap)
-bash scripts/setup-ec2.sh
+# 1. git push
+git push origin master
 
-# 백엔드 배포
-bash scripts/deploy-backend.sh
+# 2. EC2 Instance Connect로 접속 & 배포 (SSH 키 불필요)
+TEMP_DIR=$(mktemp -d) && ssh-keygen -t rsa -b 2048 -f "$TEMP_DIR/ec2_key" -N "" -q
+PUB_KEY=$(cat "$TEMP_DIR/ec2_key.pub")
+aws ec2-instance-connect send-ssh-public-key \
+  --instance-id i-033eb104d2946dcc7 \
+  --instance-os-user ec2-user \
+  --ssh-public-key "$PUB_KEY"
+ssh -i "$TEMP_DIR/ec2_key" -o StrictHostKeyChecking=no ec2-user@43.200.200.69 \
+  "cd /home/ec2-user/jiucom && git pull origin master && bash scripts/deploy-backend.sh"
+```
 
-# 프론트엔드 빌드 → S3 업로드 + CloudFront 캐시 무효화
-bash scripts/deploy-frontend-s3.sh jiucom-frontend-app E3SUNW1I4FKFCM
+**프론트엔드 (S3 + CloudFront)**
 
-# 전체 한번에
-bash scripts/deploy-all.sh jiucom-frontend-app E3SUNW1I4FKFCM
+```bash
+cd frontend && npm run build
+aws s3 sync dist/ s3://jiucom-frontend-app --delete \
+  --cache-control "public, max-age=31536000" \
+  --exclude "index.html" --exclude "*.json"
+aws s3 cp dist/index.html s3://jiucom-frontend-app/index.html \
+  --cache-control "public, max-age=0, must-revalidate" --content-type "text/html"
+aws cloudfront create-invalidation --distribution-id E3SUNW1I4FKFCM --paths "/*"
 ```
 
 자세한 내용은 [AWS_DEPLOY_GUIDE.md](./AWS_DEPLOY_GUIDE.md) 참고.
@@ -395,6 +410,18 @@ Docker 기동 시 자동으로 프로비저닝되는 대시보드:
 - dev: 샘플링 100% (모든 요청 추적)
 - prod: 샘플링 10% (성능 오버헤드 최소화)
 - Zipkin UI에서 요청별 타임라인/워터폴 다이어그램 확인 가능
+
+## Redis 캐싱
+
+주요 페이지에 Redis 캐싱을 적용하여 응답 속도를 개선합니다. Redis 장애 시 자동으로 DB fallback합니다.
+
+| 대상 | 캐시 키 | TTL | 무효화 시점 |
+|------|---------|-----|------------|
+| 게시글 상세 | `post:detail:{id}` | 10분 | 수정/삭제 시 |
+| 게시글 목록 | `post:list:{boardType}:{page}:{size}` | 5분 | 작성/수정/삭제 시 |
+| 부품 상세 | `part:detail:{id}` | 30분 | 수정/삭제 시 |
+| 부품 카테고리 | `part:categories` | 24시간 | 거의 불변 |
+| 댓글 목록 | `comment:list:{postId}:{page}:{size}` | 5분 | 댓글 CUD 시 |
 
 ## 보안
 
