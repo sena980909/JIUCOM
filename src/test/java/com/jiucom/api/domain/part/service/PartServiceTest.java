@@ -12,6 +12,7 @@ import com.jiucom.api.domain.price.repository.PriceEntryRepository;
 import com.jiucom.api.global.exception.GlobalException;
 import com.jiucom.api.global.exception.code.GlobalErrorCode;
 import com.jiucom.api.global.response.PageResponse;
+import com.jiucom.api.global.util.RedisUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -45,6 +46,9 @@ class PartServiceTest {
 
     @Mock
     private PriceEntryRepository priceEntryRepository;
+
+    @Mock
+    private RedisUtil redisUtil;
 
     private Part testPart;
 
@@ -130,6 +134,8 @@ class PartServiceTest {
         @Test
         @DisplayName("성공 - 전체 카테고리 반환")
         void getAllCategories_success() {
+            given(redisUtil.getCachedPartCategories()).willReturn(null);
+
             List<String> categories = partService.getAllCategories();
 
             assertThat(categories).contains("CPU", "GPU", "RAM", "MOTHERBOARD");

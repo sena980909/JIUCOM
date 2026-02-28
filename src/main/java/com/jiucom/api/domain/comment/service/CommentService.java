@@ -14,6 +14,7 @@ import com.jiucom.api.domain.user.entity.User;
 import com.jiucom.api.domain.user.repository.UserRepository;
 import com.jiucom.api.global.exception.GlobalException;
 import com.jiucom.api.global.exception.code.GlobalErrorCode;
+import com.jiucom.api.global.util.RedisUtil;
 import com.jiucom.api.global.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,8 +35,15 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final RedisUtil redisUtil;
 
     public CommentListResponse getComments(Long postId, int page, int size) {
+        // Check cache
+        CommentListResponse cached = redisUtil.getCachedCommentList(postId, page, size);
+        if (cached != null) {
+            return cached;
+        }
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
         Page<Comment> rootComments = commentRepository.findByPostIdAndParentIsNullAndIsDeletedFalse(postId, pageable);
 
@@ -50,12 +58,17 @@ public class CommentService {
                 })
                 .toList();
 
-        return CommentListResponse.builder()
+        CommentListResponse response = CommentListResponse.builder()
                 .comments(commentResponses)
                 .totalPages(rootComments.getTotalPages())
                 .totalElements(rootComments.getTotalElements())
                 .currentPage(page)
                 .build();
+
+        // Store in cache
+        redisUtil.cacheCommentList(postId, page, size, response);
+
+        return response;
     }
 
     @Transactional
@@ -85,6 +98,10 @@ public class CommentService {
         commentRepository.save(comment);
         post.incrementCommentCount();
 
+        // Invalidate caches
+        redisUtil.evictCommentListsForPost(postId);
+        redisUtil.evictPostDetail(postId);
+
         // Send notification to post author (if not self-comment)
         if (!post.getAuthor().getId().equals(userId)) {
             String title = "새 댓글이 달렸습니다";
@@ -109,6 +126,11 @@ public class CommentService {
         }
 
         comment.updateContent(request.getContent());
+
+        // Invalidate caches
+        Long postId = comment.getPost().getId();
+        redisUtil.evictCommentListsForPost(postId);
+
         return CommentResponse.from(comment);
     }
 
@@ -123,7 +145,13 @@ public class CommentService {
             throw new GlobalException(GlobalErrorCode.COMMENT_NOT_AUTHOR);
         }
 
+        Long postId = comment.getPost().getId();
+
         comment.softDelete();
         comment.getPost().decrementCommentCount();
+
+        // Invalidate caches
+        redisUtil.evictCommentListsForPost(postId);
+        redisUtil.evictPostDetail(postId);
     }
 }

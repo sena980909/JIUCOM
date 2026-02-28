@@ -1,13 +1,17 @@
 package com.jiucom.api.domain.price.dto.response;
 
 import com.jiucom.api.domain.price.entity.PriceEntry;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PriceComparisonResponse {
 
     private Long partId;
@@ -18,6 +22,8 @@ public class PriceComparisonResponse {
 
     @Getter
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class PriceEntryItem {
         private Long sellerId;
         private String sellerName;

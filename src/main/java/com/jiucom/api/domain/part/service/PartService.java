@@ -13,6 +13,7 @@ import com.jiucom.api.domain.price.repository.PriceEntryRepository;
 import com.jiucom.api.global.exception.GlobalException;
 import com.jiucom.api.global.exception.code.GlobalErrorCode;
 import com.jiucom.api.global.response.PageResponse;
+import com.jiucom.api.global.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,7 @@ public class PartService {
 
     private final PartRepository partRepository;
     private final PriceEntryRepository priceEntryRepository;
+    private final RedisUtil redisUtil;
 
     public PageResponse<PartListResponse> searchParts(PartSearchRequest request) {
         Sort sort = parseSort(request.getSort());
@@ -48,18 +50,40 @@ public class PartService {
     }
 
     public PartDetailResponse getPartDetail(Long partId) {
+        // Check cache
+        PartDetailResponse cached = redisUtil.getCachedPartDetail(partId);
+        if (cached != null) {
+            return cached;
+        }
+
         Part part = partRepository.findById(partId)
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new GlobalException(GlobalErrorCode.PART_NOT_FOUND));
 
         List<PriceEntry> priceEntries = priceEntryRepository.findByPartIdOrderByPriceAsc(partId);
-        return PartDetailResponse.of(part, priceEntries);
+        PartDetailResponse response = PartDetailResponse.of(part, priceEntries);
+
+        // Store in cache
+        redisUtil.cachePartDetail(partId, response);
+
+        return response;
     }
 
     public List<String> getAllCategories() {
-        return Arrays.stream(PartCategory.values())
+        // Check cache
+        List<String> cached = redisUtil.getCachedPartCategories();
+        if (cached != null) {
+            return cached;
+        }
+
+        List<String> categories = Arrays.stream(PartCategory.values())
                 .map(PartCategory::name)
                 .toList();
+
+        // Store in cache (24h TTL)
+        redisUtil.cachePartCategories(categories);
+
+        return categories;
     }
 
     @Transactional
@@ -105,7 +129,12 @@ public class PartService {
         }
 
         List<PriceEntry> priceEntries = priceEntryRepository.findByPartIdOrderByPriceAsc(partId);
-        return PartDetailResponse.of(part, priceEntries);
+        PartDetailResponse response = PartDetailResponse.of(part, priceEntries);
+
+        // Invalidate cache
+        redisUtil.evictPartDetail(partId);
+
+        return response;
     }
 
     @Transactional
@@ -114,6 +143,9 @@ public class PartService {
                 .filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new GlobalException(GlobalErrorCode.PART_NOT_FOUND));
         part.softDelete();
+
+        // Invalidate cache
+        redisUtil.evictPartDetail(partId);
     }
 
     private Sort parseSort(String sortParam) {

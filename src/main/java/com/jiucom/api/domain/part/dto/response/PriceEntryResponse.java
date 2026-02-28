@@ -1,11 +1,15 @@
 package com.jiucom.api.domain.part.dto.response;
 
 import com.jiucom.api.domain.price.entity.PriceEntry;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PriceEntryResponse {
 
     private Long id;

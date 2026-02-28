@@ -1,4 +1,4 @@
-package com.jiucom.api.domain.comment.dto.response;
+package com.jiucom.api.domain.post.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,10 +11,11 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentListResponse {
+public class CachedPostListResponse {
 
-    private List<CommentResponse> comments;
+    private List<PostListResponse> content;
     private int totalPages;
     private long totalElements;
     private int currentPage;
+    private int size;
 }

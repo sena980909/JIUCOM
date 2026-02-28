@@ -15,6 +15,7 @@ import com.jiucom.api.domain.user.entity.enums.UserStatus;
 import com.jiucom.api.domain.user.repository.UserRepository;
 import com.jiucom.api.global.exception.GlobalException;
 import com.jiucom.api.global.exception.code.GlobalErrorCode;
+import com.jiucom.api.global.util.RedisUtil;
 import com.jiucom.api.global.util.TestSecurityContextHelper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,8 @@ class CommentServiceTest {
     private UserRepository userRepository;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private RedisUtil redisUtil;
 
     private User testUser;
     private User postAuthor;

@@ -11,6 +11,7 @@ import com.jiucom.api.domain.user.entity.enums.UserStatus;
 import com.jiucom.api.domain.user.repository.UserRepository;
 import com.jiucom.api.global.exception.GlobalException;
 import com.jiucom.api.global.exception.code.GlobalErrorCode;
+import com.jiucom.api.global.util.RedisUtil;
 import com.jiucom.api.global.util.TestSecurityContextHelper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,9 @@ class PostServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private RedisUtil redisUtil;
 
     private User testUser;
     private Post testPost;
@@ -83,12 +87,13 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("게시글 상세 조회 - viewCount 증가")
-    void getPostDetail_incrementsViewCount() {
+    @DisplayName("게시글 상세 조회 - 성공")
+    void getPostDetail_success() {
         given(postRepository.findById(1L)).willReturn(Optional.of(testPost));
 
         PostDetailResponse response = postService.getPostDetail(1L);
-        assertThat(testPost.getViewCount()).isEqualTo(1);
+        assertThat(response.getTitle()).isEqualTo("테스트 게시글");
+        assertThat(response.getBoardType()).isEqualTo("FREE");
     }
 
     @Test

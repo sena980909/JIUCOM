@@ -1,14 +1,18 @@
 package com.jiucom.api.domain.comment.dto.response;
 
 import com.jiucom.api.domain.comment.entity.Comment;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommentResponse {
 
     private Long id;

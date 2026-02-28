@@ -1,13 +1,17 @@
 package com.jiucom.api.domain.post.dto.response;
 
 import com.jiucom.api.domain.post.entity.Post;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PostListResponse {
 
     private Long id;
