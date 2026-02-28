@@ -51,13 +51,8 @@ export default function PartList() {
     setSearchParams(newParams);
   };
 
-  // Unwrap ApiResponse wrapper if present
-  const pageData = data && 'data' in data && (data as { data?: typeof data }).data
-    ? (data as unknown as { data: typeof data }).data
-    : data;
-
-  const content = pageData?.content || [];
-  const totalPages = pageData?.totalPages || 0;
+  const content = data?.content || [];
+  const totalPages = data?.totalPages || 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

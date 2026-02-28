@@ -77,12 +77,11 @@ export default function PartDetail() {
   const priceHistory = priceHistoryRaw ? unwrap<typeof priceHistoryRaw>(priceHistoryRaw) : undefined;
 
   // Reviews
-  const { data: reviewsRaw } = useQuery({
+  const { data: reviews } = useQuery({
     queryKey: ['reviews', partId],
     queryFn: () => getReviews(partId),
     enabled: !!partId,
   });
-  const reviews = reviewsRaw ? unwrap<typeof reviewsRaw>(reviewsRaw) : undefined;
 
   // Favorites
   const { data: favoritesRaw } = useQuery({

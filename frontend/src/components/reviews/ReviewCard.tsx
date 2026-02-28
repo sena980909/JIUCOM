@@ -3,8 +3,8 @@ interface ReviewCardProps {
     id: number;
     content: string;
     rating: number;
-    nickname: string;
-    userId: number;
+    authorNickname: string;
+    authorId: number;
     createdAt: string;
   };
   currentUserId?: number;
@@ -42,7 +42,7 @@ export default function ReviewCard({
   onEdit,
   onDelete,
 }: ReviewCardProps) {
-  const isOwner = currentUserId != null && currentUserId === review.userId;
+  const isOwner = currentUserId != null && currentUserId === review.authorId;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
@@ -50,7 +50,7 @@ export default function ReviewCard({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm font-semibold text-gray-900">
-              {review.nickname}
+              {review.authorNickname}
             </span>
             <StarRating rating={review.rating} />
           </div>

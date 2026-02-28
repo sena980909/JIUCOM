@@ -17,15 +17,23 @@ export interface Review {
   partName: string;
   content: string;
   rating: number;
-  userId: number;
-  nickname: string;
+  authorId: number;
+  authorNickname: string;
+  likeCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export const getReviews = async (partId: number) => {
-  const response = await api.get<Review[]>(`/parts/${partId}/reviews`);
-  return response.data;
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+}
+
+export const getReviews = async (partId: number): Promise<Review[]> => {
+  const response = await api.get<PageResponse<Review>>(`/parts/${partId}/reviews`);
+  const data = response.data as unknown as PageResponse<Review>;
+  return data.content ?? [];
 };
 
 export const createReview = async (data: CreateReviewRequest) => {

@@ -43,10 +43,7 @@ export default function PostDetail() {
     isError: isPostError,
   } = useQuery<Post>({
     queryKey: ['post', postId],
-    queryFn: async () => {
-      const result = await getPostDetail(postId);
-      return (result as { data?: Post }).data ?? result;
-    },
+    queryFn: () => getPostDetail(postId),
     enabled: !!postId,
   });
 
