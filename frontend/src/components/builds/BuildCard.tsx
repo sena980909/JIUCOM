@@ -58,7 +58,7 @@ export default function BuildCard({ build }: BuildCardProps) {
           </p>
         )}
 
-        <div className="text-xl font-bold text-blue-600 mb-3">
+        <div className="text-xl font-bold text-blue-600 mb-3 whitespace-nowrap">
           {formatPrice(build.totalPrice)}원
         </div>
 

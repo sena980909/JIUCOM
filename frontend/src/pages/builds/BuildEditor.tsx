@@ -405,7 +405,7 @@ export default function BuildEditor() {
 
                 <div className="flex items-center justify-between">
                   <span className="text-base font-semibold text-gray-900">총 예상 금액</span>
-                  <span className="text-xl font-bold text-blue-600">
+                  <span className="text-xl font-bold text-blue-600 whitespace-nowrap">
                     {totalPrice.toLocaleString('ko-KR')}원
                   </span>
                 </div>

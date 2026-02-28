@@ -287,7 +287,7 @@ export default function BuildDetail() {
                 <td colSpan={5} className="px-6 py-4 text-right text-base font-semibold text-gray-900">
                   총 견적 금액
                 </td>
-                <td className="px-6 py-4 text-right text-xl font-bold text-blue-600">
+                <td className="px-6 py-4 text-right text-xl font-bold text-blue-600 whitespace-nowrap">
                   {formatPrice(build.totalPrice)}원
                 </td>
               </tr>
