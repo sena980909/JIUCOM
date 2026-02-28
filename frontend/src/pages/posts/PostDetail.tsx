@@ -53,10 +53,7 @@ export default function PostDetail() {
   // Fetch comments
   const { data: comments = [] } = useQuery<Comment[]>({
     queryKey: ['comments', postId],
-    queryFn: async () => {
-      const result = await getComments(postId);
-      return (result as { data?: Comment[] }).data ?? result;
-    },
+    queryFn: () => getComments(postId),
     enabled: !!postId,
   });
 

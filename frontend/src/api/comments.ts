@@ -12,17 +12,26 @@ export interface UpdateCommentRequest {
 export interface Comment {
   id: number;
   content: string;
-  userId: number;
-  nickname: string;
+  authorId: number;
+  authorNickname: string;
   parentId: number | null;
-  children: Comment[];
+  likeCount: number;
+  replies: Comment[];
   createdAt: string;
   updatedAt: string;
 }
 
-export const getComments = async (postId: number) => {
-  const response = await api.get<Comment[]>(`/posts/${postId}/comments`);
-  return response.data;
+interface CommentsResponse {
+  comments: Comment[];
+  totalPages: number;
+  totalElements: number;
+  currentPage: number;
+}
+
+export const getComments = async (postId: number): Promise<Comment[]> => {
+  const response = await api.get<CommentsResponse>(`/posts/${postId}/comments`);
+  const data = response.data as unknown as CommentsResponse;
+  return data.comments ?? [];
 };
 
 export const createComment = async (postId: number, data: CreateCommentRequest) => {

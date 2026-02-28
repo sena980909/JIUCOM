@@ -50,7 +50,7 @@ function CommentItem({ comment, postId, depth }: CommentItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
 
-  const isOwner = user?.id === comment.userId;
+  const isOwner = user?.id === comment.authorId;
 
   const createReplyMutation = useMutation({
     mutationFn: (content: string) =>
@@ -129,7 +129,7 @@ function CommentItem({ comment, postId, depth }: CommentItemProps) {
         {/* Comment header */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-800">{comment.nickname}</span>
+            <span className="text-sm font-medium text-gray-800">{comment.authorNickname}</span>
             <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
           </div>
 
@@ -255,9 +255,9 @@ function CommentItem({ comment, postId, depth }: CommentItemProps) {
       </div>
 
       {/* Nested replies */}
-      {comment.children && comment.children.length > 0 && (
+      {comment.replies && comment.replies.length > 0 && (
         <div>
-          {comment.children.map((child) => (
+          {comment.replies.map((child) => (
             <CommentItem
               key={child.id}
               comment={child}
